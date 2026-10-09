@@ -1,0 +1,19 @@
+# 可选：让 ONNX Runtime 的 CUDAExecutionProvider 真正生效（Windows + NVIDIA 显卡）
+# 安装： .venv\Scripts\python.exe -m pip install -r backend/requirements-gpu.txt
+#
+# 为什么要单独一份：装了 GPU 版的 onnxruntime **不等于**跑在 GPU 上。
+# onnxruntime_providers_cuda.dll 在建会话时才会被拉起来，而它自己还静态导入
+# cudart64_12 / cublas64_12 / cublasLt64_12 / cudnn64_9 / cufft64_11，
+# 这些 DLL 都只躺在下面这些轮子的 nvidia/<组件>/bin 里，pip 不会替我们挂 PATH。
+# 缺任何一个都是 LoadLibrary 错误码 126，然后静默回落到 CPU。
+# 挂载逻辑见 backend/app/core/cuda_dlls.py，背景见 docs/项目设计方案.md 7.3.2。
+#
+# 版本为本项目实测通过的组合（RTX 4060 Laptop 8 GB / Windows 11 / onnxruntime 1.19.2）：
+#   CUDA 12 x cuDNN 9 是 onnxruntime 1.19 的硬要求
+#   cuFFT 取 11.0.2.54 是为了和同机的 torch 2.3.1+cu121 对齐：
+#   Windows 的模块名是进程全局的，cuFFT 版本不一致会让 torch 的 cufftw64_11.dll
+#   报 WinError 127，import torch 直接失败
+nvidia-cuda-runtime-cu12==12.6.77
+nvidia-cublas-cu12==12.9.2.10
+nvidia-cudnn-cu12==9.1.1.17
+nvidia-cufft-cu12==11.0.2.54

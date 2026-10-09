@@ -1,0 +1,22 @@
+{
+  "name": "基于深度学习的智能菜谱识别",
+  "short_name": "智能菜谱",
+  "description": "出门吃饭随手拍一张，认出是哪道菜，直接给出配比与步骤。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f5f5",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

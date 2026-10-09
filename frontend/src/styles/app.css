@@ -1,0 +1,703 @@
+/* 三区域布局与组件样式，视觉基准与 prototype/dish.html 一致 */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 页头 ---------- */
+
+.topbar {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 24px 24px 0;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.app-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- 三栏骨架 ---------- */
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(280px, 1.05fr) minmax(340px, 1.35fr);
+  gap: 16px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 16px 24px 24px;
+  height: calc(100vh - 65px);
+  min-height: 620px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  min-height: 0;
+}
+
+.card--grow {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: var(--font-size-title);
+  font-weight: 600;
+}
+
+.badge,
+.hint,
+.muted-inline {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-faint);
+}
+
+.hint {
+  white-space: nowrap;
+}
+
+/* ---------- 区域 A：拍照识别 ---------- */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 210px;
+  padding: 14px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: var(--radius-dropzone);
+  background: #fafafa;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dropzone:hover,
+.dropzone:focus-visible {
+  border-color: var(--color-border-strong);
+  background: var(--color-bg);
+  outline: none;
+}
+
+.dropzone.is-dragover {
+  border-color: var(--color-progress);
+  background: #eff6ff;
+}
+
+.dropzone.is-busy {
+  cursor: progress;
+}
+
+.dropzone-text {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.dropzone-text strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.dropzone-text.is-error {
+  color: var(--color-danger);
+}
+
+/* 静态演示站的示例图：点一张就能跑完「识别 → 菜谱」整条链路，访客不用自己找照片 */
+.samples {
+  margin-top: 10px;
+}
+
+.samples-label {
+  margin: 0 0 6px;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+}
+
+.samples-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sample {
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sample:hover {
+  border-color: var(--color-text-muted);
+}
+
+.sample.is-active {
+  border-color: var(--color-accent-text);
+  background: var(--color-accent-bg);
+  color: var(--color-accent-text);
+}
+
+/* 这张示例图想演示什么；与模型信息条分开，别混成一句话 */
+.notice {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--color-muted-bg);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  line-height: 1.6;
+}
+
+/* 演示站顶部的口径说明：不跑模型、不联网，别让访客以为这里是实时推理 */
+.demo-banner {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+  font-size: var(--font-size-meta);
+  line-height: 1.6;
+}
+
+.preview {
+  max-width: 100%;
+  max-height: 232px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.btn {
+  flex: 1;
+  padding: 13px 18px;
+  border-radius: var(--radius-chip);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn--primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.caption {
+  margin: 12px 0 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-faint);
+  text-align: center;
+}
+
+/* ---------- 区域 B：候选菜品 ---------- */
+
+.candidates {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.cand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-chip);
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--color-text-faint);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cand:hover {
+  border-color: var(--color-text-muted);
+}
+
+.cand:focus-visible {
+  outline: 2px solid var(--color-progress);
+  outline-offset: 2px;
+}
+
+.cand.is-selected {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.cand-name {
+  white-space: nowrap;
+}
+
+.cand-name small {
+  margin-left: 6px;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+}
+
+.bar {
+  flex: 1;
+  height: 6px;
+  min-width: 30px;
+  border-radius: 999px;
+  background: var(--color-progress-track);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-progress);
+}
+
+.cand-pct {
+  font-size: var(--font-size-meta);
+  color: var(--color-text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cand.is-selected .cand-pct {
+  color: var(--color-text-muted);
+}
+
+/* 手动纠正菜名（FR-10）：候选都不对时的兜底入口，固定在候选区底部 */
+
+.manual {
+  flex: none;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.manual-label {
+  display: block;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-faint);
+}
+
+.manual-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.manual-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-chip);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.manual-input:focus-visible {
+  outline: 2px solid var(--color-progress);
+  outline-offset: 1px;
+  border-color: var(--color-border-strong);
+}
+
+.manual-btn {
+  flex: none;
+  padding: 9px 14px;
+  font-size: 13.5px;
+}
+
+.manual-active {
+  margin: 8px 0 0;
+  font-size: var(--font-size-meta);
+  color: var(--color-text-muted);
+}
+
+/* ---------- 区域 C：菜谱与做法 ---------- */
+
+.recipe-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-right: -6px;
+  scroll-behavior: smooth;
+}
+
+.recipe-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.recipe-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.recipe-meta {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.recipe-desc {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+.section-label {
+  margin: 20px 0 10px;
+  font-size: var(--font-size-meta);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text-faint);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 4px 11px;
+  border-radius: var(--radius-tag);
+  font-size: 13px;
+  background: var(--color-accent-bg);
+  color: var(--color-accent-text);
+}
+
+.tag--optional {
+  background: var(--color-muted-bg);
+  color: var(--color-text-muted);
+}
+
+.tag--provisional {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+.steps {
+  margin: 0;
+  padding: 0 0 0 22px;
+}
+
+.steps li {
+  padding-left: 2px;
+}
+
+.steps li + li {
+  margin-top: 8px;
+}
+
+.video {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.video-text {
+  min-width: 0;
+}
+
+.video-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.video-url {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--color-text-faint);
+  word-break: break-all;
+}
+
+.video-btn {
+  flex: none;
+  padding: 9px 16px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13.5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.video-btn:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* ---------- 空态与悬浮按钮 ---------- */
+
+.empty {
+  margin: 0;
+  padding: 32px 8px;
+  text-align: center;
+  color: var(--color-text-faint);
+  font-size: 13px;
+}
+
+.fab {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-fab);
+  font-size: 18px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.fab:hover {
+  background: #fafafa;
+}
+
+/* 菜谱记忆（FR-15）：做过的菜只在本机；固定在右栏菜谱面板下方 */
+
+.memory-card {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 20px 18px;
+}
+
+.memory-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  min-height: 0;
+  /* 右栏不能无限长：记忆条数一多就让列表自己滚，菜谱面板的高度不被挤掉 */
+  max-height: 168px;
+}
+
+/* 右栏高度有限，记忆空态文案不占整块留白 */
+.memory-empty {
+  padding: 14px 4px;
+  text-align: left;
+}
+
+.memory-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-chip);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.memory-item:hover {
+  border-color: var(--color-text-muted);
+  background: var(--color-bg);
+}
+
+.memory-name small {
+  margin-left: 6px;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+}
+
+.memory-time {
+  flex: none;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.link-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-faint);
+  font-family: inherit;
+  font-size: var(--font-size-meta);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link-btn:disabled {
+  opacity: 0.45;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+/* 中屏（侧边栏打开、演示用的小窗口）：退化为「左照片 / 右候选 + 菜谱」两栏，
+   上传窗口始终留在左侧；只有更窄的手机宽度才叠成单栏。 */
+@media (max-width: 1120px) {
+  .app {
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 1.6fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1.35fr);
+  }
+
+  .col--photo {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .col--candidates {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .col--recipe {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 12px;
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+    height: auto;
+  }
+
+  .col--photo,
+  .col--candidates,
+  .col--recipe {
+    grid-area: auto;
+  }
+
+  .candidates,
+  .memory-list,
+  .recipe-scroll {
+    overflow: visible;
+  }
+
+  .memory-list {
+    max-height: none;
+  }
+
+  /* 手机专属：刘海屏与小白条要留内边距，触摸目标不小于 48 px */
+  .topbar {
+    padding: max(16px, env(safe-area-inset-top)) 16px 0;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .cand,
+  .memory-item {
+    min-height: 48px;
+  }
+
+  .sample {
+    min-height: 44px;
+  }
+
+  .fab {
+    right: calc(16px + env(safe-area-inset-right));
+    bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+}

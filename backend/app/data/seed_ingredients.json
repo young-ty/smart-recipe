@@ -1,0 +1,1076 @@
+[
+  {
+    "id": 1,
+    "name": "番茄",
+    "category": "蔬菜",
+    "alias": "西红柿,蕃茄"
+  },
+  {
+    "id": 2,
+    "name": "鸡蛋",
+    "category": "蛋类",
+    "alias": "蛋,鸡子"
+  },
+  {
+    "id": 3,
+    "name": "青椒",
+    "category": "蔬菜",
+    "alias": "尖椒,柿子椒"
+  },
+  {
+    "id": 4,
+    "name": "土豆",
+    "category": "蔬菜",
+    "alias": "马铃薯,洋芋"
+  },
+  {
+    "id": 5,
+    "name": "豆腐",
+    "category": "豆制品",
+    "alias": "水豆腐,北豆腐,南豆腐,老豆腐,嫩豆腐"
+  },
+  {
+    "id": 6,
+    "name": "牛肉末",
+    "category": "肉类",
+    "alias": "牛肉馅"
+  },
+  {
+    "id": 7,
+    "name": "菠菜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 8,
+    "name": "大蒜",
+    "category": "调味",
+    "alias": "蒜,蒜瓣"
+  },
+  {
+    "id": 9,
+    "name": "西兰花",
+    "category": "蔬菜",
+    "alias": "绿菜花"
+  },
+  {
+    "id": 10,
+    "name": "五花肉",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 11,
+    "name": "冰糖",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 12,
+    "name": "鸡胸肉",
+    "category": "肉类",
+    "alias": "鸡脯肉"
+  },
+  {
+    "id": 13,
+    "name": "花生米",
+    "category": "干货",
+    "alias": "花生"
+  },
+  {
+    "id": 14,
+    "name": "虾",
+    "category": "水产",
+    "alias": "大虾,基围虾"
+  },
+  {
+    "id": 15,
+    "name": "粉丝",
+    "category": "主食",
+    "alias": "龙口粉丝"
+  },
+  {
+    "id": 16,
+    "name": "香菇",
+    "category": "菌菇",
+    "alias": "冬菇"
+  },
+  {
+    "id": 17,
+    "name": "青菜",
+    "category": "蔬菜",
+    "alias": "小白菜"
+  },
+  {
+    "id": 18,
+    "name": "黄瓜",
+    "category": "蔬菜",
+    "alias": "青瓜"
+  },
+  {
+    "id": 19,
+    "name": "牛腩",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 20,
+    "name": "鲈鱼",
+    "category": "水产",
+    "alias": null
+  },
+  {
+    "id": 21,
+    "name": "姜",
+    "category": "调味",
+    "alias": "生姜"
+  },
+  {
+    "id": 22,
+    "name": "洋葱",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 23,
+    "name": "胡萝卜",
+    "category": "蔬菜",
+    "alias": "红萝卜"
+  },
+  {
+    "id": 24,
+    "name": "茄子",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 25,
+    "name": "豆角",
+    "category": "蔬菜",
+    "alias": "四季豆"
+  },
+  {
+    "id": 26,
+    "name": "玉米",
+    "category": "蔬菜",
+    "alias": "玉米粒"
+  },
+  {
+    "id": 27,
+    "name": "白菜",
+    "category": "蔬菜",
+    "alias": "大白菜"
+  },
+  {
+    "id": 28,
+    "name": "生菜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 29,
+    "name": "芹菜",
+    "category": "蔬菜",
+    "alias": "西芹,香芹"
+  },
+  {
+    "id": 30,
+    "name": "冬瓜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 31,
+    "name": "南瓜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 32,
+    "name": "白萝卜",
+    "category": "蔬菜",
+    "alias": "萝卜"
+  },
+  {
+    "id": 33,
+    "name": "莲藕",
+    "category": "蔬菜",
+    "alias": "藕"
+  },
+  {
+    "id": 34,
+    "name": "山药",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 35,
+    "name": "苦瓜",
+    "category": "蔬菜",
+    "alias": "凉瓜"
+  },
+  {
+    "id": 36,
+    "name": "韭菜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 37,
+    "name": "豆芽",
+    "category": "蔬菜",
+    "alias": "黄豆芽"
+  },
+  {
+    "id": 38,
+    "name": "金针菇",
+    "category": "菌菇",
+    "alias": null
+  },
+  {
+    "id": 39,
+    "name": "木耳",
+    "category": "干货",
+    "alias": "黑木耳"
+  },
+  {
+    "id": 40,
+    "name": "平菇",
+    "category": "菌菇",
+    "alias": null
+  },
+  {
+    "id": 41,
+    "name": "鸭蛋",
+    "category": "蛋类",
+    "alias": null
+  },
+  {
+    "id": 42,
+    "name": "猪里脊",
+    "category": "肉类",
+    "alias": "里脊肉"
+  },
+  {
+    "id": 43,
+    "name": "猪排骨",
+    "category": "肉类",
+    "alias": "排骨"
+  },
+  {
+    "id": 44,
+    "name": "鸡腿",
+    "category": "肉类",
+    "alias": "鸡腿肉"
+  },
+  {
+    "id": 45,
+    "name": "羊肉",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 46,
+    "name": "培根",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 47,
+    "name": "猪肉末",
+    "category": "肉类",
+    "alias": "猪肉馅"
+  },
+  {
+    "id": 48,
+    "name": "草鱼",
+    "category": "水产",
+    "alias": null
+  },
+  {
+    "id": 49,
+    "name": "三文鱼",
+    "category": "水产",
+    "alias": null
+  },
+  {
+    "id": 50,
+    "name": "蛤蜊",
+    "category": "水产",
+    "alias": "花蛤"
+  },
+  {
+    "id": 51,
+    "name": "鱿鱼",
+    "category": "水产",
+    "alias": null
+  },
+  {
+    "id": 52,
+    "name": "带鱼",
+    "category": "水产",
+    "alias": null
+  },
+  {
+    "id": 53,
+    "name": "豆干",
+    "category": "豆制品",
+    "alias": "香干"
+  },
+  {
+    "id": 54,
+    "name": "腐竹",
+    "category": "豆制品",
+    "alias": null
+  },
+  {
+    "id": 55,
+    "name": "千张",
+    "category": "豆制品",
+    "alias": "百叶"
+  },
+  {
+    "id": 56,
+    "name": "米饭",
+    "category": "主食",
+    "alias": "白米饭"
+  },
+  {
+    "id": 57,
+    "name": "面条",
+    "category": "主食",
+    "alias": "挂面"
+  },
+  {
+    "id": 58,
+    "name": "年糕",
+    "category": "主食",
+    "alias": null
+  },
+  {
+    "id": 59,
+    "name": "面粉",
+    "category": "主食",
+    "alias": "中筋面粉"
+  },
+  {
+    "id": 60,
+    "name": "意大利面",
+    "category": "主食",
+    "alias": null
+  },
+  {
+    "id": 61,
+    "name": "红枣",
+    "category": "干货",
+    "alias": "大枣"
+  },
+  {
+    "id": 62,
+    "name": "枸杞",
+    "category": "干货",
+    "alias": null
+  },
+  {
+    "id": 63,
+    "name": "葱",
+    "category": "调味",
+    "alias": "小葱,大葱"
+  },
+  {
+    "id": 64,
+    "name": "香菜",
+    "category": "蔬菜",
+    "alias": "芫荽"
+  },
+  {
+    "id": 65,
+    "name": "生抽",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 66,
+    "name": "老抽",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 67,
+    "name": "香醋",
+    "category": "调味",
+    "alias": "醋"
+  },
+  {
+    "id": 68,
+    "name": "料酒",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 69,
+    "name": "蚝油",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 70,
+    "name": "豆瓣酱",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 71,
+    "name": "花椒",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 72,
+    "name": "干辣椒",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 73,
+    "name": "淀粉",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 74,
+    "name": "白糖",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 75,
+    "name": "香油",
+    "category": "调味",
+    "alias": "芝麻油"
+  },
+  {
+    "id": 76,
+    "name": "芝麻",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 77,
+    "name": "牛奶",
+    "category": "乳制品",
+    "alias": null
+  },
+  {
+    "id": 78,
+    "name": "芝士",
+    "category": "乳制品",
+    "alias": "奶酪"
+  },
+  {
+    "id": 79,
+    "name": "柠檬",
+    "category": "水果",
+    "alias": null
+  },
+  {
+    "id": 80,
+    "name": "盐",
+    "category": "调味",
+    "alias": "食盐"
+  },
+  {
+    "id": 81,
+    "name": "食用油",
+    "category": "调味",
+    "alias": "植物油,菜籽油,色拉油"
+  },
+  {
+    "id": 82,
+    "name": "鸡翅",
+    "category": "肉类",
+    "alias": "翅中,鸡中翅"
+  },
+  {
+    "id": 83,
+    "name": "鲫鱼",
+    "category": "水产",
+    "alias": null
+  },
+  {
+    "id": 84,
+    "name": "花菜",
+    "category": "蔬菜",
+    "alias": "菜花,椰菜花"
+  },
+  {
+    "id": 85,
+    "name": "梅干菜",
+    "category": "干货",
+    "alias": "梅菜,霉干菜"
+  },
+  {
+    "id": 86,
+    "name": "腐乳",
+    "category": "豆制品",
+    "alias": "豆腐乳,南乳"
+  },
+  {
+    "id": 87,
+    "name": "八角",
+    "category": "调味",
+    "alias": "大料,八角茴香"
+  },
+  {
+    "id": 88,
+    "name": "香叶",
+    "category": "调味",
+    "alias": "月桂叶,香桂叶"
+  },
+  {
+    "id": 89,
+    "name": "黄豆",
+    "category": "干货",
+    "alias": "干黄豆,大豆,黄大豆"
+  },
+  {
+    "id": 90,
+    "name": "清水",
+    "category": "调味",
+    "alias": "水,凉水,温水"
+  },
+  {
+    "id": 91,
+    "name": "葡萄糖酸内酯",
+    "category": "调味",
+    "alias": "内酯,豆腐内酯"
+  },
+  {
+    "id": 92,
+    "name": "包菜",
+    "category": "蔬菜",
+    "alias": "圆白菜,卷心菜,甘蓝"
+  },
+  {
+    "id": 93,
+    "name": "娃娃菜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 94,
+    "name": "空心菜",
+    "category": "蔬菜",
+    "alias": "通菜,蕹菜"
+  },
+  {
+    "id": 95,
+    "name": "油麦菜",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 96,
+    "name": "蚕豆",
+    "category": "蔬菜",
+    "alias": "蚕豆米"
+  },
+  {
+    "id": 97,
+    "name": "毛豆",
+    "category": "蔬菜",
+    "alias": "毛豆米"
+  },
+  {
+    "id": 98,
+    "name": "杏鲍菇",
+    "category": "菌菇",
+    "alias": null
+  },
+  {
+    "id": 99,
+    "name": "蘑菇",
+    "category": "菌菇",
+    "alias": "口蘑,白蘑菇"
+  },
+  {
+    "id": 100,
+    "name": "百合",
+    "category": "蔬菜",
+    "alias": "鲜百合"
+  },
+  {
+    "id": 101,
+    "name": "莴笋",
+    "category": "蔬菜",
+    "alias": "青笋,莴苣"
+  },
+  {
+    "id": 102,
+    "name": "红薯",
+    "category": "蔬菜",
+    "alias": "地瓜,番薯,红苕"
+  },
+  {
+    "id": 103,
+    "name": "紫薯",
+    "category": "蔬菜",
+    "alias": "紫心地瓜"
+  },
+  {
+    "id": 104,
+    "name": "酸菜",
+    "category": "蔬菜",
+    "alias": "老坛酸菜,泡青菜"
+  },
+  {
+    "id": 105,
+    "name": "蒜苗",
+    "category": "蔬菜",
+    "alias": "青蒜,蒜叶"
+  },
+  {
+    "id": 106,
+    "name": "蒜薹",
+    "category": "蔬菜",
+    "alias": "蒜苔"
+  },
+  {
+    "id": 107,
+    "name": "杭椒",
+    "category": "蔬菜",
+    "alias": null
+  },
+  {
+    "id": 108,
+    "name": "小米椒",
+    "category": "蔬菜",
+    "alias": "朝天椒,小红椒"
+  },
+  {
+    "id": 109,
+    "name": "泡椒",
+    "category": "调味",
+    "alias": "泡辣椒"
+  },
+  {
+    "id": 110,
+    "name": "剁椒",
+    "category": "调味",
+    "alias": "剁辣椒"
+  },
+  {
+    "id": 111,
+    "name": "松仁",
+    "category": "干货",
+    "alias": "松子,松子仁"
+  },
+  {
+    "id": 112,
+    "name": "黄花菜",
+    "category": "干货",
+    "alias": "金针菜"
+  },
+  {
+    "id": 113,
+    "name": "海带",
+    "category": "水产",
+    "alias": "海带丝,昆布"
+  },
+  {
+    "id": 114,
+    "name": "紫菜",
+    "category": "水产",
+    "alias": "紫菜片"
+  },
+  {
+    "id": 115,
+    "name": "虾仁",
+    "category": "水产",
+    "alias": "鲜虾仁,河虾仁"
+  },
+  {
+    "id": 116,
+    "name": "螃蟹",
+    "category": "水产",
+    "alias": "大闸蟹,梭子蟹"
+  },
+  {
+    "id": 117,
+    "name": "皮皮虾",
+    "category": "水产",
+    "alias": "虾爬子,濑尿虾"
+  },
+  {
+    "id": 118,
+    "name": "扇贝",
+    "category": "水产",
+    "alias": "扇贝肉,带子"
+  },
+  {
+    "id": 119,
+    "name": "生蚝",
+    "category": "水产",
+    "alias": "牡蛎"
+  },
+  {
+    "id": 120,
+    "name": "海蜇",
+    "category": "水产",
+    "alias": "海蛰,蛰头"
+  },
+  {
+    "id": 121,
+    "name": "鲤鱼",
+    "category": "水产",
+    "alias": "黄河鲤鱼"
+  },
+  {
+    "id": 122,
+    "name": "桂鱼",
+    "category": "水产",
+    "alias": "鳜鱼,桂花鱼"
+  },
+  {
+    "id": 123,
+    "name": "黄鳝",
+    "category": "水产",
+    "alias": "鳝鱼,鳝丝"
+  },
+  {
+    "id": 124,
+    "name": "甲鱼",
+    "category": "水产",
+    "alias": "鳖"
+  },
+  {
+    "id": 125,
+    "name": "鱼头",
+    "category": "水产",
+    "alias": "胖头鱼,鲢鱼头"
+  },
+  {
+    "id": 126,
+    "name": "牛肉",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 127,
+    "name": "牛里脊",
+    "category": "肉类",
+    "alias": "牛柳"
+  },
+  {
+    "id": 128,
+    "name": "牛腱",
+    "category": "肉类",
+    "alias": "牛腱子"
+  },
+  {
+    "id": 129,
+    "name": "猪肉",
+    "category": "肉类",
+    "alias": "瘦肉,猪瘦肉"
+  },
+  {
+    "id": 130,
+    "name": "猪肝",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 131,
+    "name": "猪肚",
+    "category": "肉类",
+    "alias": "猪肚片"
+  },
+  {
+    "id": 132,
+    "name": "猪腰",
+    "category": "肉类",
+    "alias": "猪腰子,腰子"
+  },
+  {
+    "id": 133,
+    "name": "猪耳朵",
+    "category": "肉类",
+    "alias": "猪耳"
+  },
+  {
+    "id": 134,
+    "name": "猪蹄",
+    "category": "肉类",
+    "alias": "猪手,猪脚"
+  },
+  {
+    "id": 135,
+    "name": "猪血",
+    "category": "肉类",
+    "alias": "血豆腐"
+  },
+  {
+    "id": 136,
+    "name": "鸭血",
+    "category": "肉类",
+    "alias": null
+  },
+  {
+    "id": 137,
+    "name": "毛肚",
+    "category": "肉类",
+    "alias": "牛百叶,牛肚"
+  },
+  {
+    "id": 138,
+    "name": "鸡肉",
+    "category": "肉类",
+    "alias": "鸡,整鸡,三黄鸡,土鸡"
+  },
+  {
+    "id": 139,
+    "name": "鸡爪",
+    "category": "肉类",
+    "alias": "凤爪,鸡脚"
+  },
+  {
+    "id": 140,
+    "name": "鸡胗",
+    "category": "肉类",
+    "alias": "鸭胗,鸡鸭胗,胗"
+  },
+  {
+    "id": 141,
+    "name": "鸭肉",
+    "category": "肉类",
+    "alias": "鸭,老鸭"
+  },
+  {
+    "id": 142,
+    "name": "火腿",
+    "category": "肉类",
+    "alias": "火腿片,金华火腿"
+  },
+  {
+    "id": 143,
+    "name": "香肠",
+    "category": "肉类",
+    "alias": "腊肠,广式香肠"
+  },
+  {
+    "id": 144,
+    "name": "皮蛋",
+    "category": "蛋类",
+    "alias": "松花蛋"
+  },
+  {
+    "id": 145,
+    "name": "大米",
+    "category": "主食",
+    "alias": "米,珍珠米,东北大米"
+  },
+  {
+    "id": 146,
+    "name": "小米",
+    "category": "主食",
+    "alias": "黄小米"
+  },
+  {
+    "id": 147,
+    "name": "糯米",
+    "category": "主食",
+    "alias": "江米"
+  },
+  {
+    "id": 148,
+    "name": "糯米粉",
+    "category": "主食",
+    "alias": "江米粉,汤圆粉"
+  },
+  {
+    "id": 149,
+    "name": "粉条",
+    "category": "主食",
+    "alias": "红薯粉条,宽粉,宽粉条"
+  },
+  {
+    "id": 150,
+    "name": "米粉",
+    "category": "主食",
+    "alias": "米线,干米粉"
+  },
+  {
+    "id": 151,
+    "name": "河粉",
+    "category": "主食",
+    "alias": "沙河粉"
+  },
+  {
+    "id": 152,
+    "name": "酵母",
+    "category": "调味",
+    "alias": "干酵母,酵母粉"
+  },
+  {
+    "id": 153,
+    "name": "泡打粉",
+    "category": "调味",
+    "alias": "发粉"
+  },
+  {
+    "id": 154,
+    "name": "小苏打",
+    "category": "调味",
+    "alias": "苏打粉,小苏打粉"
+  },
+  {
+    "id": 155,
+    "name": "豆豉",
+    "category": "调味",
+    "alias": "阳江豆豉"
+  },
+  {
+    "id": 156,
+    "name": "甜面酱",
+    "category": "调味",
+    "alias": "甜酱"
+  },
+  {
+    "id": 157,
+    "name": "咖喱",
+    "category": "调味",
+    "alias": "咖喱块,咖喱粉"
+  },
+  {
+    "id": 158,
+    "name": "孜然",
+    "category": "调味",
+    "alias": "孜然粉,孜然粒"
+  },
+  {
+    "id": 159,
+    "name": "五香粉",
+    "category": "调味",
+    "alias": "五香面"
+  },
+  {
+    "id": 160,
+    "name": "白胡椒粉",
+    "category": "调味",
+    "alias": "胡椒粉,白胡椒"
+  },
+  {
+    "id": 161,
+    "name": "芝麻酱",
+    "category": "调味",
+    "alias": "麻酱"
+  },
+  {
+    "id": 162,
+    "name": "啤酒",
+    "category": "调味",
+    "alias": null
+  },
+  {
+    "id": 163,
+    "name": "黄油",
+    "category": "乳制品",
+    "alias": "无盐黄油,动物黄油"
+  },
+  {
+    "id": 164,
+    "name": "淡奶油",
+    "category": "乳制品",
+    "alias": "稀奶油,动物淡奶油"
+  },
+  {
+    "id": 165,
+    "name": "沙拉酱",
+    "category": "调味",
+    "alias": "蛋黄酱"
+  },
+  {
+    "id": 166,
+    "name": "吉利丁",
+    "category": "调味",
+    "alias": "吉利丁片,明胶片"
+  },
+  {
+    "id": 167,
+    "name": "苹果",
+    "category": "水果",
+    "alias": null
+  },
+  {
+    "id": 168,
+    "name": "香蕉",
+    "category": "水果",
+    "alias": null
+  },
+  {
+    "id": 169,
+    "name": "草莓",
+    "category": "水果",
+    "alias": null
+  },
+  {
+    "id": 170,
+    "name": "猕猴桃",
+    "category": "水果",
+    "alias": "奇异果"
+  },
+  {
+    "id": 171,
+    "name": "火龙果",
+    "category": "水果",
+    "alias": null
+  },
+  {
+    "id": 172,
+    "name": "雪梨",
+    "category": "水果",
+    "alias": "梨,鸭梨,香梨"
+  },
+  {
+    "id": 173,
+    "name": "小龙虾",
+    "category": "水产",
+    "alias": "龙虾"
+  },
+  {
+    "id": 174,
+    "name": "猪梅肉",
+    "category": "肉类",
+    "alias": "梅头肉,梅花肉"
+  },
+  {
+    "id": 175,
+    "name": "鹅肉",
+    "category": "肉类",
+    "alias": "鹅,烧鹅"
+  },
+  {
+    "id": 176,
+    "name": "乌鸡",
+    "category": "肉类",
+    "alias": "乌骨鸡"
+  },
+  {
+    "id": 177,
+    "name": "味噌",
+    "category": "调味",
+    "alias": "大酱,黄酱,韩式大酱"
+  },
+  {
+    "id": 178,
+    "name": "银耳",
+    "category": "干货",
+    "alias": "白木耳,雪耳"
+  },
+  {
+    "id": 179,
+    "name": "莲子",
+    "category": "干货",
+    "alias": "湘莲,莲子米"
+  }
+]

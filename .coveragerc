@@ -1,0 +1,21 @@
+# 覆盖率口径（NFR-06：核心算法单测覆盖率 ≥ 80%）
+# 用法： .venv\Scripts\python.exe -m pytest --cov --cov-report=term-missing
+# 报表数字落在 .codex-build/coverage-backend.json，供 docs/测试报告.md 引用
+[run]
+source = backend/app
+branch = True
+
+[report]
+show_missing = True
+# NFR-06 的验收线：低于 80% 直接失败，别让覆盖率悄悄滑下去
+fail_under = 80
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    \.\.\.
+
+[json]
+output = .codex-build/coverage-backend.json
+
+[html]
+directory = .codex-build/coverage-backend-html

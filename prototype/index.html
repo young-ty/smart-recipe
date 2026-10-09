@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>基于深度学习的智能菜谱识别 · 界面原型</title>
+<style>
+  :root {
+    --color-bg: #F5F5F5;
+    --color-surface: #FFFFFF;
+    --color-text: #111111;
+    --color-text-muted: #6B7280;
+    --color-text-faint: #9CA3AF;
+    --color-border: #E5E7EB;
+    --color-border-strong: #111111;
+    --color-primary: #111111;
+    --color-accent-bg: #E8F5E9;
+    --color-accent-text: #2E7D32;
+    --color-muted-bg: #F3F4F6;
+    --color-progress: #2563EB;
+    --color-progress-track: #E5E7EB;
+    --radius-card: 16px;
+    --radius-chip: 10px;
+    --radius-tag: 8px;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, .04);
+    --shadow-fab: 0 4px 12px rgba(0, 0, 0, .10);
+    --font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-family);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) 2fr;
+    gap: 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    height: 100vh;
+  }
+
+  .col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 20px;
+    min-height: 0;
+  }
+
+  .card--grow {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .badge {
+    font-size: 12px;
+    color: var(--color-text-faint);
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--color-text-faint);
+    white-space: nowrap;
+  }
+
+  /* ---------- 区域 A：拍照识别 ---------- */
+
+  .dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 240px;
+    padding: 16px;
+    border: 1.5px dashed #D1D5DB;
+    border-radius: 12px;
+    background: #FAFAFA;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .15s, background .15s;
+  }
+
+  .dropzone:hover,
+  .dropzone:focus-visible {
+    border-color: var(--color-border-strong);
+    background: #F5F5F5;
+    outline: none;
+  }
+
+  .dropzone.is-dragover {
+    border-color: var(--color-progress);
+    background: #EFF6FF;
+  }
+
+  .dropzone.is-busy {
+    cursor: progress;
+  }
+
+  .dropzone-text {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 14px;
+  }
+
+  .dropzone-text strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .muted-inline {
+    font-size: 12px;
+    color: var(--color-text-faint);
+  }
+
+  .dropzone-text.is-error { color: #B91C1C; }
+
+  .preview {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px 20px;
+    border-radius: var(--radius-chip);
+    border: 1px solid transparent;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s, background .15s, border-color .15s;
+  }
+
+  .btn--primary {
+    background: var(--color-primary);
+    color: #FFFFFF;
+  }
+
+  .btn--primary:hover:not(:disabled) { opacity: .85; }
+
+  .btn--secondary {
+    background: #FFFFFF;
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .btn--secondary:hover:not(:disabled) { border-color: var(--color-border-strong); }
+
+  .btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+
+  .caption {
+    margin: 14px 0 0;
+    font-size: 12px;
+    color: var(--color-text-faint);
+    text-align: center;
+  }
+
+  /* ---------- 区域 B：识别到的食材 ---------- */
+
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-chip);
+    background: #FFFFFF;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--color-text-faint);
+    transition: border-color .15s, color .15s;
+  }
+
+  .chip:focus-visible {
+    outline: 2px solid var(--color-progress);
+    outline-offset: 2px;
+  }
+
+  .chip.is-selected {
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+
+  .chip-name { white-space: nowrap; }
+
+  .bar {
+    flex: 1;
+    height: 6px;
+    min-width: 32px;
+    border-radius: 999px;
+    background: var(--color-progress-track);
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-progress);
+  }
+
+  .chip-pct {
+    font-size: 12px;
+    color: var(--color-text-faint);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .chip.is-selected .chip-pct { color: var(--color-text-muted); }
+
+  /* ---------- 区域 C：推荐菜谱 ---------- */
+
+  .recipes {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-right: 6px;
+    margin-right: -6px;
+    scroll-behavior: smooth;
+  }
+
+  .recipe {
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+
+  .recipe-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .recipe-name {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .recipe-match {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .recipe-match b {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .recipe-meta {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--color-text-muted);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .tag {
+    padding: 3px 10px;
+    border-radius: var(--radius-tag);
+    font-size: 13px;
+    background: var(--color-accent-bg);
+    color: var(--color-accent-text);
+  }
+
+  .tag--missing {
+    background: var(--color-muted-bg);
+    color: var(--color-text-faint);
+  }
+
+  .steps {
+    margin: 14px 0 0;
+    padding: 14px 0 0 22px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 14px;
+  }
+
+  .steps li { padding-left: 2px; }
+  .steps li + li { margin-top: 4px; }
+
+  /* ---------- 空态与悬浮按钮 ---------- */
+
+  .empty {
+    margin: 0;
+    padding: 28px 8px;
+    text-align: center;
+    color: var(--color-text-faint);
+    font-size: 13px;
+  }
+
+  .fab {
+    position: fixed;
+    right: 32px;
+    bottom: 32px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: #FFFFFF;
+    box-shadow: var(--shadow-fab);
+    font-size: 18px;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  .fab:hover { background: #FAFAFA; }
+
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+    .recipes { overflow: visible; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="card">
+    <header class="panel-head">
+      <h2 class="panel-title">拍照识别</h2>
+      <span class="badge">模拟 CV 模型推理</span>
+    </header>
+    <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="上传食材照片">
+      <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
+      <img class="preview" id="preview" alt="已选择的食材照片" hidden>
+      <p class="dropzone-text" id="dropzone-text">
+        <strong>点击或拖拽图片</strong><br>
+        <span class="muted-inline">支持 jpg / png / webp，单张 ≤ 5 MB</span>
+      </p>
+    </div>
+    <div class="actions">
+      <button class="btn btn--primary" id="btn-recognize">开始识别</button>
+      <button class="btn btn--secondary" id="btn-reset">重置</button>
+    </div>
+    <p class="caption">模型: 待接入 · 食材 103 类</p>
+  </section>
+
+  <div class="col-right">
+    <section class="card">
+      <header class="panel-head">
+        <h2 class="panel-title">识别到的食材</h2>
+        <span class="hint">点击可取消勾选</span>
+      </header>
+      <div class="chips" id="chips"></div>
+      <p class="empty" id="chips-empty">先上传照片并点击「开始识别」</p>
+    </section>
+
+    <section class="card card--grow">
+      <header class="panel-head">
+        <h2 class="panel-title">推荐菜谱</h2>
+        <span class="hint" id="recipes-hint"></span>
+      </header>
+      <div class="recipes" id="recipes"></div>
+      <p class="empty" id="recipes-empty">先识别或勾选食材</p>
+    </section>
+  </div>
+</div>
+
+<button class="fab" id="fab" hidden aria-label="向下浏览">↓</button>
+
+<script id="seed-recipes" type="application/json">
+[
+  {
+    "id": 101, "name": "番茄炒蛋", "cook_time_minutes": 10, "difficulty": "简单", "rating": 4.8,
+    "required": ["番茄", "鸡蛋"],
+    "steps": ["鸡蛋打散加少许盐", "热油下锅炒至半熟盛出", "番茄切块炒出汁", "回锅合炒，加糖盐调味"]
+  },
+  {
+    "id": 102, "name": "番茄蛋花汤", "cook_time_minutes": 8, "difficulty": "简单", "rating": 4.6,
+    "required": ["番茄", "鸡蛋"],
+    "steps": ["番茄切块加水煮开", "淀粉勾芡", "淋入蛋液搅成蛋花", "撒葱花，点香油"]
+  },
+  {
+    "id": 103, "name": "番茄牛腩", "cook_time_minutes": 90, "difficulty": "中等", "rating": 4.7,
+    "required": ["番茄", "牛腩"],
+    "steps": ["牛腩切块冷水下锅焯去血沫", "番茄炒出沙后下牛腩翻炒", "加热水没过食材，小火炖 60 分钟", "大火收汁，加盐调味"]
+  },
+  {
+    "id": 104, "name": "青椒炒蛋", "cook_time_minutes": 10, "difficulty": "简单", "rating": 4.5,
+    "required": ["青椒", "鸡蛋"],
+    "steps": ["鸡蛋打散炒散盛出", "青椒切丝下锅炒至断生", "倒回鸡蛋，加盐炒匀"]
+  },
+  {
+    "id": 105, "name": "醋溜土豆丝", "cook_time_minutes": 15, "difficulty": "简单", "rating": 4.4,
+    "required": ["土豆", "青椒"],
+    "steps": ["土豆切细丝泡水去淀粉", "热油爆香花椒后捞出", "下土豆丝大火快炒", "加香醋与盐，放青椒丝炒匀"]
+  },
+  {
+    "id": 106, "name": "麻婆豆腐", "cook_time_minutes": 25, "difficulty": "中等", "rating": 4.6,
+    "required": ["豆腐", "牛肉末"],
+    "steps": ["豆腐切块用淡盐水焯过", "炒香豆瓣酱与牛肉末", "下豆腐轻推，加水淀粉勾芡", "出锅撒花椒粉与葱花"]
+  },
+  {
+    "id": 107, "name": "蒜蓉菠菜", "cook_time_minutes": 10, "difficulty": "简单", "rating": 4.3,
+    "required": ["菠菜", "大蒜"],
+    "steps": ["菠菜焯水 10 秒捞出沥干", "蒜末小火爆香", "下菠菜快炒，加盐出锅"]
+  },
+  {
+    "id": 108, "name": "白灼西兰花", "cook_time_minutes": 12, "difficulty": "简单", "rating": 4.2,
+    "required": ["西兰花", "大蒜"],
+    "steps": ["西兰花掰小朵用盐水泡洗", "沸水加盐与油焯 2 分钟", "捞出摆盘，淋蒜蓉豉油"]
+  },
+  {
+    "id": 109, "name": "红烧肉", "cook_time_minutes": 120, "difficulty": "困难", "rating": 4.9,
+    "required": ["五花肉", "冰糖"],
+    "steps": ["五花肉切块冷水下锅焯透", "干锅炒糖色至枣红", "下肉块裹匀糖色，加生抽老抽", "加热水小火焖 60 分钟，大火收汁"]
+  },
+  {
+    "id": 110, "name": "宫保鸡丁", "cook_time_minutes": 30, "difficulty": "中等", "rating": 4.7,
+    "required": ["鸡胸肉", "花生米"],
+    "steps": ["鸡胸肉切丁腌制 15 分钟", "滑油至变色盛出", "爆香干辣椒与葱段", "回锅加调味汁，撒花生米炒匀"]
+  },
+  {
+    "id": 111, "name": "蒜蓉粉丝蒸虾", "cook_time_minutes": 20, "difficulty": "中等", "rating": 4.5,
+    "required": ["虾", "粉丝"],
+    "steps": ["粉丝温水泡软铺盘", "虾开背去虾线摆在粉丝上", "铺满蒜蓉，上汽蒸 6 分钟", "淋热油与蒸鱼豉油"]
+  },
+  {
+    "id": 112, "name": "香菇青菜", "cook_time_minutes": 12, "difficulty": "简单", "rating": 4.4,
+    "required": ["香菇", "青菜"],
+    "steps": ["香菇切片煸出香味", "下青菜大火快炒", "加盐与少许蚝油炒匀"]
+  },
+  {
+    "id": 113, "name": "土豆炖牛肉", "cook_time_minutes": 100, "difficulty": "中等", "rating": 4.8,
+    "required": ["土豆", "牛腩"],
+    "steps": ["牛腩焯水后加姜片炖 50 分钟", "下土豆块继续炖 20 分钟", "加盐调味，撒香菜"]
+  },
+  {
+    "id": 114, "name": "凉拌黄瓜", "cook_time_minutes": 5, "difficulty": "简单", "rating": 4.3,
+    "required": ["黄瓜", "大蒜"],
+    "steps": ["黄瓜拍碎切段", "加蒜末、生抽、香醋与糖", "淋香油拌匀，冷藏 10 分钟更爽口"]
+  },
+  {
+    "id": 115, "name": "清蒸鲈鱼", "cook_time_minutes": 25, "difficulty": "中等", "rating": 4.6,
+    "required": ["鲈鱼", "姜"],
+    "steps": ["鲈鱼改刀，铺姜片腌 10 分钟", "上汽蒸 8 分钟，倒掉盘中腥水", "淋蒸鱼豉油，铺葱丝", "浇热油激出香味"]
+  }
+]
+</script>
+
+<script id="seed-ingredients" type="application/json">
+[
+  { "name": "番茄", "category": "蔬菜" },
+  { "name": "鸡蛋", "category": "蛋类" },
+  { "name": "青椒", "category": "蔬菜" },
+  { "name": "土豆", "category": "蔬菜" },
+  { "name": "豆腐", "category": "豆制品" },
+  { "name": "牛肉末", "category": "肉类" },
+  { "name": "菠菜", "category": "蔬菜" },
+  { "name": "大蒜", "category": "调味" },
+  { "name": "西兰花", "category": "蔬菜" },
+  { "name": "五花肉", "category": "肉类" },
+  { "name": "冰糖", "category": "调味" },
+  { "name": "鸡胸肉", "category": "肉类" },
+  { "name": "花生米", "category": "干货" },
+  { "name": "虾", "category": "水产" },
+  { "name": "粉丝", "category": "主食" },
+  { "name": "香菇", "category": "菌菇" },
+  { "name": "青菜", "category": "蔬菜" },
+  { "name": "黄瓜", "category": "蔬菜" },
+  { "name": "牛腩", "category": "肉类" },
+  { "name": "鲈鱼", "category": "水产" },
+  { "name": "姜", "category": "调味" },
+  { "name": "洋葱", "category": "蔬菜" },
+  { "name": "胡萝卜", "category": "蔬菜" },
+  { "name": "茄子", "category": "蔬菜" },
+  { "name": "豆角", "category": "蔬菜" },
+  { "name": "玉米", "category": "蔬菜" }
+]
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var RECIPES = JSON.parse(document.getElementById('seed-recipes').textContent);
+  var INGREDIENT_POOL = JSON.parse(document.getElementById('seed-ingredients').textContent);
+
+  var CONFIDENCE_THRESHOLD = 0.75;   // 低于该置信度的食材默认不勾选
+  var RECOGNIZED_COUNT = 3;          // 原型固定返回 3 种食材，与设计稿一致
+  var RECOMMEND_LIMIT = 10;
+  var MAX_FILE_BYTES = 5 * 1024 * 1024;
+  var ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  var RECOGNIZE_DELAY_MS = 600;
+
+  // 设计稿基准用例：未上传图片时直接返回，便于演示复现
+  var BASELINE_RESULT = [
+    { name: '番茄', confidence: 0.96, category: '蔬菜' },
+    { name: '鸡蛋', confidence: 0.89, category: '蛋类' },
+    { name: '青椒', confidence: 0.72, category: '蔬菜' }
+  ];
+
+  var els = {
+    dropzone: document.getElementById('dropzone'),
+    dropzoneText: document.getElementById('dropzone-text'),
+    fileInput: document.getElementById('file-input'),
+    preview: document.getElementById('preview'),
+    btnRecognize: document.getElementById('btn-recognize'),
+    btnReset: document.getElementById('btn-reset'),
+    chips: document.getElementById('chips'),
+    chipsEmpty: document.getElementById('chips-empty'),
+    recipes: document.getElementById('recipes'),
+    recipesEmpty: document.getElementById('recipes-empty'),
+    recipesHint: document.getElementById('recipes-hint'),
+    fab: document.getElementById('fab')
+  };
+
+  var defaultDropzoneHtml = els.dropzoneText.innerHTML;
+
+  var state = {
+    file: null,
+    previewUrl: null,
+    status: 'idle',
+    detected: [],
+    selected: new Set(),
+    recipes: [],
+    total: 0
+  };
+
+  /* ---------------- 工具函数 ---------------- */
+
+  function delay(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function fnv1a(bytes) {
+    var hash = 0x811c9dc5;
+    for (var i = 0; i < bytes.length; i++) {
+      hash ^= bytes[i];
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash >>> 0;
+  }
+
+  function mulberry32(seed) {
+    var a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0;
+      var t = a;
+      t = Math.imul(t ^ (t >>> 15), 1 | t);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ---------------- 模拟识别（确定性） ---------------- */
+
+  function pickIngredients(seed) {
+    var rand = mulberry32(seed);
+    var pool = INGREDIENT_POOL.slice();
+    var picked = [];
+    for (var i = 0; i < RECOGNIZED_COUNT && pool.length > 0; i++) {
+      var index = Math.floor(rand() * pool.length);
+      picked.push({ item: pool.splice(index, 1)[0], order: rand() });
+    }
+    picked.sort(function (a, b) { return b.order - a.order; });
+    return picked.map(function (entry, idx) {
+      var lo = idx === 0 ? 0.90 : 0.60;
+      var hi = idx === 0 ? 0.99 : 0.95;
+      return {
+        name: entry.item.name,
+        category: entry.item.category,
+        confidence: Math.round((lo + rand() * (hi - lo)) * 100) / 100
+      };
+    }).sort(function (a, b) { return b.confidence - a.confidence; });
+  }
+
+  function mockRecognize(file) {
+    return delay(RECOGNIZE_DELAY_MS).then(function () {
+      if (!file) {
+        return BASELINE_RESULT.map(function (item) { return Object.assign({}, item); });
+      }
+      return file.arrayBuffer().then(function (buffer) {
+        return pickIngredients(fnv1a(new Uint8Array(buffer)));
+      });
+    });
+  }
+
+  /* ---------------- 推荐引擎 ---------------- */
+
+  function recommend(selected) {
+    var candidates = [];
+    RECIPES.forEach(function (recipe) {
+      var required = recipe.required || [];
+      if (required.length === 0) return;
+      var matched = required.filter(function (name) { return selected.has(name); });
+      if (matched.length === 0) return;
+      candidates.push({
+        id: recipe.id,
+        name: recipe.name,
+        cook_time_minutes: recipe.cook_time_minutes,
+        difficulty: recipe.difficulty,
+        rating: recipe.rating,
+        steps: recipe.steps,
+        match: {
+          matched: matched.length,
+          total_required: required.length,
+          ratio: matched.length / required.length,
+          matched_ingredients: matched,
+          missing_ingredients: required.filter(function (name) { return !selected.has(name); })
+        }
+      });
+    });
+
+    candidates.sort(function (a, b) {
+      return b.match.ratio - a.match.ratio
+        || b.match.matched - a.match.matched
+        || a.match.missing_ingredients.length - b.match.missing_ingredients.length
+        || b.rating - a.rating
+        || a.cook_time_minutes - b.cook_time_minutes
+        || a.id - b.id;
+    });
+    return candidates;
+  }
+
+  /* ---------------- 渲染 ---------------- */
+
+  function renderChips() {
+    var hasResult = state.detected.length > 0;
+    els.chips.hidden = !hasResult;
+    els.chipsEmpty.hidden = hasResult;
+    els.chips.innerHTML = '';
+
+    state.detected.forEach(function (item) {
+      var percent = Math.round(item.confidence * 100);
+      var selected = state.selected.has(item.name);
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (selected ? ' is-selected' : '');
+      chip.setAttribute('role', 'checkbox');
+      chip.setAttribute('aria-checked', selected ? 'true' : 'false');
+      chip.setAttribute('aria-label', item.name + ' ' + percent + '%');
+      chip.innerHTML =
+        '<span class="chip-name">' + escapeHtml(item.name) + '</span>' +
+        '<span class="bar"><span class="bar-fill" style="width:' + percent + '%"></span></span>' +
+        '<span class="chip-pct">' + percent + '%</span>';
+      chip.addEventListener('click', function () { toggleIngredient(item.name); });
+      els.chips.appendChild(chip);
+    });
+  }
+
+  function renderRecipes() {
+    var hasResult = state.recipes.length > 0;
+    els.recipes.hidden = !hasResult;
+    els.recipesEmpty.hidden = hasResult;
+    els.recipesHint.textContent = hasResult ? state.total + ' 道菜 · 按匹配度排序' : '';
+    els.recipes.innerHTML = '';
+
+    state.recipes.forEach(function (recipe) {
+      var percent = Math.round(recipe.match.ratio * 100);
+      var tags = recipe.match.matched_ingredients.map(function (name) {
+        return '<span class="tag">' + escapeHtml(name) + '</span>';
+      }).concat(recipe.match.missing_ingredients.map(function (name) {
+        return '<span class="tag tag--missing">' + escapeHtml(name) + '</span>';
+      })).join('');
+      var steps = recipe.steps.map(function (step) {
+        return '<li>' + escapeHtml(step) + '</li>';
+      }).join('');
+
+      var card = document.createElement('article');
+      card.className = 'recipe';
+      card.innerHTML =
+        '<div class="recipe-head">' +
+          '<h3 class="recipe-name">' + escapeHtml(recipe.name) + '</h3>' +
+          '<span class="recipe-match">匹配 <b>' + recipe.match.matched + '/' + recipe.match.total_required +
+            '</b> · ' + percent + '%</span>' +
+        '</div>' +
+        '<p class="recipe-meta">' + recipe.cook_time_minutes + ' 分钟 · 难度' + escapeHtml(recipe.difficulty) +
+          ' · ★ ' + recipe.rating.toFixed(1) + '</p>' +
+        '<div class="tags">' + tags + '</div>' +
+        '<ol class="steps">' + steps + '</ol>';
+      els.recipes.appendChild(card);
+    });
+  }
+
+  function syncRecognizeButton() {
+    var busy = state.status === 'recognizing';
+    els.btnRecognize.disabled = busy;
+    els.btnRecognize.textContent = busy ? '识别中…' : '开始识别';
+  }
+
+  function syncFab() {
+    var scrollable = els.recipes.scrollHeight - els.recipes.clientHeight > 8;
+    els.fab.hidden = !scrollable;
+  }
+
+  function render() {
+    renderChips();
+    renderRecipes();
+    syncRecognizeButton();
+    syncFab();
+  }
+
+  function setDropzoneMessage(html, isError) {
+    els.dropzoneText.innerHTML = html;
+    els.dropzoneText.classList.toggle('is-error', Boolean(isError));
+  }
+
+  /* ---------------- 交互 ---------------- */
+
+  function updateRecommendations() {
+    var all = recommend(state.selected);
+    state.total = all.length;
+    state.recipes = all.slice(0, RECOMMEND_LIMIT);
+    renderRecipes();
+    syncFab();
+  }
+
+  function toggleIngredient(name) {
+    if (state.selected.has(name)) {
+      state.selected.delete(name);
+    } else {
+      state.selected.add(name);
+    }
+    renderChips();
+    updateRecommendations();
+  }
+
+  function revokePreview() {
+    if (state.previewUrl) {
+      URL.revokeObjectURL(state.previewUrl);
+      state.previewUrl = null;
+    }
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    if (ALLOWED_TYPES.indexOf(file.type) === -1) {
+      setDropzoneMessage('<strong>不支持的图片格式</strong><br>' +
+        '<span class="muted-inline">请上传 jpg / png / webp</span>', true);
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      setDropzoneMessage('<strong>图片超过 5 MB</strong><br>' +
+        '<span class="muted-inline">请压缩后重试</span>', true);
+      return;
+    }
+    revokePreview();
+    state.file = file;
+    state.previewUrl = URL.createObjectURL(file);
+    els.preview.src = state.previewUrl;
+    els.preview.hidden = false;
+    setDropzoneMessage('<strong>' + escapeHtml(file.name) + '</strong><br>' +
+      '<span class="muted-inline">点击「开始识别」进行模拟推理</span>', false);
+  }
+
+  function recognize() {
+    if (state.status === 'recognizing') return;
+    state.status = 'recognizing';
+    syncRecognizeButton();
+
+    mockRecognize(state.file).then(function (detected) {
+      state.detected = detected;
+      state.selected = new Set(detected
+        .filter(function (item) { return item.confidence >= CONFIDENCE_THRESHOLD; })
+        .map(function (item) { return item.name; }));
+      state.status = 'ready';
+      setDropzoneMessage('<strong>识别完成 · ' + detected.length + ' 种食材</strong><br>' +
+        '<span class="muted-inline">（原型使用模拟结果）</span>', false);
+      renderChips();
+      updateRecommendations();
+      syncRecognizeButton();
+    });
+  }
+
+  function reset() {
+    revokePreview();
+    state.file = null;
+    state.status = 'idle';
+    state.detected = [];
+    state.selected = new Set();
+    state.recipes = [];
+    state.total = 0;
+    els.fileInput.value = '';
+    els.preview.hidden = true;
+    els.preview.removeAttribute('src');
+    setDropzoneMessage(defaultDropzoneHtml, false);
+    render();
+  }
+
+  /* ---------------- 事件绑定 ---------------- */
+
+  els.dropzone.addEventListener('click', function () { els.fileInput.click(); });
+  els.dropzone.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      els.fileInput.click();
+    }
+  });
+  els.fileInput.addEventListener('change', function (event) {
+    handleFile(event.target.files && event.target.files[0]);
+  });
+  ['dragenter', 'dragover'].forEach(function (type) {
+    els.dropzone.addEventListener(type, function (event) {
+      event.preventDefault();
+      els.dropzone.classList.add('is-dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(function (type) {
+    els.dropzone.addEventListener(type, function (event) {
+      event.preventDefault();
+      els.dropzone.classList.remove('is-dragover');
+    });
+  });
+  els.dropzone.addEventListener('drop', function (event) {
+    var files = event.dataTransfer && event.dataTransfer.files;
+    handleFile(files && files[0]);
+  });
+
+  els.btnRecognize.addEventListener('click', recognize);
+  els.btnReset.addEventListener('click', reset);
+  els.recipes.addEventListener('scroll', syncFab);
+  window.addEventListener('resize', syncFab);
+  els.fab.addEventListener('click', function () {
+    var list = els.recipes;
+    var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 8;
+    list.scrollTop = atBottom ? 0 : list.scrollHeight;
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

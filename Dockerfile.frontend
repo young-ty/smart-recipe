@@ -1,0 +1,29 @@
+# 前端镜像：第一阶段用 Node 构建静态产物，第二阶段交给 nginx 托管。
+#
+# 交付形态是「nginx 托管构建产物 + 反向代理 /api 到后端」，不是 vite dev server。
+# dev server 只服务于本地开发，nginx 这条链路才是真实部署的样子。
+
+FROM node:24-alpine AS build
+
+# npm 源同样用构建参数暴露：registry.npmjs.org 在本机网络下不可达，默认走 npmmirror。
+# npm 会把 lockfile 里指向官方 registry 的 resolved 地址换成这里配置的源，
+# 所以 package-lock.json 不用改，校验值也还是原来的。
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
+WORKDIR /app
+
+# 依赖清单先拷进来，让 npm ci 单独占一层：只改业务代码时不用重装依赖
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --registry "$NPM_REGISTRY" --no-audit --no-fund
+
+COPY frontend/ ./
+# 这条脚本自带 tsc --noEmit：类型不过就不会产出镜像
+RUN npm run build
+
+
+FROM nginx:alpine
+
+COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80

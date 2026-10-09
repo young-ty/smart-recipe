@@ -1,0 +1,77 @@
+{
+  "source_file": "ONNX/best.onnx",
+  "source_kind": "onnx_delivered",
+  "source_note": "训练阶段产出的第二代权重：直接给 ONNX，本次不需要 .pt → ONNX 转换；随附手写说明 ONNX/ONNX-注意事项.md",
+  "source_sha256": "baf647adfd1e86f4d8cab67aef9dbaf24db53002cf687937a7504f155c746d9c",
+  "source_size_bytes": 351270213,
+  "arch": "convnext_base.fb_in22k_ft_in1k",
+  "arch_source": "timm",
+  "num_classes": 208,
+  "onnx_file": "dish.onnx",
+  "onnx_sha256": "baf647adfd1e86f4d8cab67aef9dbaf24db53002cf687937a7504f155c746d9c",
+  "onnx_size_bytes": 351270213,
+  "input": {
+    "name": "input",
+    "dtype": "float32",
+    "shape": [
+      "batch",
+      3,
+      288,
+      288
+    ],
+    "note": "空间尺寸固定 288，只有 batch 维是动态的"
+  },
+  "output": {
+    "name": "logits",
+    "shape": [
+      "batch",
+      208
+    ],
+    "note": "未过 softmax 的原始 logits，解码时自己做数值稳定的 softmax"
+  },
+  "training_meta": {
+    "dataset": "ChineseFoodNet",
+    "test_size": 20310,
+    "top1": 0.8454,
+    "top5": 0.9791,
+    "macro_f1": 0.8308,
+    "self_reported": true,
+    "reproducible_locally": false,
+    "note": "训练阶段记录的指标，测试集（近 20 GB）未一并保留，无法在本地复算；页面引用时必须标注“训练阶段记录”"
+  },
+  "preprocess": {
+    "input_size": [
+      3,
+      288,
+      288
+    ],
+    "interpolation": "bilinear",
+    "resize_short_side": 329,
+    "mean": [
+      0.485,
+      0.456,
+      0.406
+    ],
+    "std": [
+      0.229,
+      0.224,
+      0.225
+    ],
+    "crop_pct": 0.875,
+    "crop_mode": "center",
+    "layout": "NCHW",
+    "color_order": "RGB",
+    "scale": 0.00392156862745098,
+    "note": "短边缩放到 int(input / crop_pct) = 329，再中心裁剪 288；训练说明要求双线性插值（旧权重是双三次）"
+  },
+  "labels": "models/dish_labels.json —— 训练产出的 Food list - Menu.csv 经 backend/tools/import_labels.py 转换，208 类",
+  "superseded": {
+    "arch": "resnet50d",
+    "checkpoint": "best.pt",
+    "checkpoint_sha256": "5f48d0576712ae798b927439df8e76b11f96b343a8561c55b1905edde92739e2",
+    "checkpoint_size_bytes": 287866529,
+    "onnx_file": "dish-resnet50d-208.onnx",
+    "onnx_sha256": "edfcc4b616c455bca1b64c5abb9de74549dd28d28f8542aa1cfe4184a40907b7",
+    "reason": "2026-09-20 替换为第二代 convnext 权重：训练口径 top-1 84.54% vs 79.23%，且新一代直接交付 ONNX"
+  }
+}

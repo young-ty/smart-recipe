@@ -1,0 +1,58 @@
+name: 演示站
+
+# 把前端的静态演示版发布到 GitHub Pages，给简历 / 面试留一个点开就能看的链接。
+# 演示版不带后端：候选与置信度取自预置的真实模型输出，菜谱取自同一条链路返回的快照，
+# 所以这个工作流既不需要模型权重，也不需要大模型 Key。
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'frontend/**'
+      - 'demo/dishes/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 构建静态演示站
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: 安装前端依赖
+        run: npm ci
+      - name: 前端测试
+        run: npm test
+      - name: 构建演示版
+        run: npm run build:demo
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: 发布到 GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

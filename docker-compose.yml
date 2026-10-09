@@ -1,0 +1,63 @@
+# 一键拉起后端与前端（容器化部署，见 docs/容器化部署.md）。
+#
+#   docker compose up -d --build      构建并启动
+#   docker compose ps                 看状态
+#   docker compose logs -f backend    跟踪后端日志
+#   docker compose down               停止（数据库留在卷里）
+#   docker compose down -v            停止并清掉数据库卷
+#
+# 权重不进镜像：宿主机的 models/ 以只读方式挂到 /app/models，
+# 换模型只需替换宿主机的文件，不必重新构建镜像。
+
+name: recipe-recognizer
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    # 大模型 Key 从仓库根的 .env 注入（该文件已 gitignore，绝不会烤进镜像）。
+    # 没有 .env 也能起来，只是库外菜会走「生成服务不可用」分支，识别与库内菜谱不受影响。
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      RECIPE_MODELS_DIR: /app/models
+      RECIPE_DB_FILE: /data/recipe.db
+      # CPU 镜像里没有 CUDA，写死省得每次启动都去探一遍
+      RECIPE_ONNX_PROVIDERS: cpu
+      RECIPE_RECOGNIZE_MAX_CONCURRENCY: "4"
+      RECIPE_WARMUP: "1"
+    volumes:
+      - ./models:/app/models:ro
+      - recipe-data:/data
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      # 镜像里没有 curl，用 python 探活，免得为健康检查再装一个包
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).status == 200 else 1)"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      # 首次启动要建表、灌种子，还要加载 335 MB 权重，给足冷启动时间
+      start_period: 90s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      # 宿主端口与本机演示保持一致：菜谱记忆按 origin 隔离，换端口等于换一份记忆
+      - "127.0.0.1:5173:80"
+    restart: unless-stopped
+
+volumes:
+  recipe-data:

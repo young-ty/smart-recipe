@@ -1,0 +1,48 @@
+# 后端运行镜像：Python 3.9 + FastAPI + onnxruntime（CPU）。
+#
+# 基础镜像取 3.9-slim，与本机实测通过的 Python 3.9 对齐，避免「容器里换了个小版本
+# 就复现不出问题」。本机没有可透传的独立显卡，容器里固定走 CPU 执行提供程序，
+# GPU 版镜像的做法记在 docs/容器化部署.md 的「后续可选」一节。
+
+FROM python:3.9-slim
+
+# 依赖源用构建参数暴露，默认走清华 PyPI 镜像。实测本机网络到 pypi.org 与
+# files.pythonhosted.org 的 TLS 会被中断，默认值必须能在国内的网络下直接构建；
+# 换到能直连官方源的网络时，用
+#   --build-arg PIP_INDEX_URL=https://pypi.org/simple
+# 覆盖即可（见 docs/容器化部署.md）。
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# 这里不装 libgomp1：实测 onnxruntime 1.19.2 在这个镜像里直接 import 就成功
+# （见 docker run 的验收结果），不需要额外系统库。反过来，一旦引入 apt，
+# 构建就被绑在 apt 源上：Debian 13 的 Packages 索引在国内镜像上只有压缩版，
+# apt-get update 会 404，加了镜像加速也绕不过去。
+
+WORKDIR /app
+
+# 依赖单独占一层：只改代码时不必重装依赖
+COPY backend/requirements.txt backend/requirements.txt
+RUN python -m pip install \
+      --index-url "$PIP_INDEX_URL" \
+      --trusted-host "$PIP_TRUSTED_HOST" \
+      -r backend/requirements.txt
+
+COPY backend/ backend/
+
+# 识别器的预处理实现放在 prototype/ 下，按路径加载，不做第二份拷贝
+# （见 backend/app/services/dish_preprocess.py）。漏了它不会报错，
+# 但识别会静默降级成模拟结果，所以这一行是必须的。
+COPY prototype/preprocess.py prototype/preprocess.py
+
+WORKDIR /app/backend
+
+EXPOSE 8000
+
+# 权重不进镜像（dish.onnx 有 335 MB 且已被 gitignore），由 compose 只读挂载到 /app/models
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

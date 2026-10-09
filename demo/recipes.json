@@ -1,0 +1,962 @@
+{
+  "红烧肉": {
+    "dish": "红烧肉",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 109,
+      "origin": "seed",
+      "name": "红烧肉",
+      "cook_time_minutes": 120,
+      "difficulty": "困难",
+      "rating": 4.9,
+      "servings": 4,
+      "description": "炒糖色是关键，肥而不腻。",
+      "required": [
+        {
+          "name": "五花肉",
+          "amount": "600 克"
+        },
+        {
+          "name": "冰糖",
+          "amount": "20 克"
+        }
+      ],
+      "optional": [
+        {
+          "name": "姜",
+          "amount": "3 片"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 勺"
+        },
+        {
+          "name": "老抽",
+          "amount": "1 勺"
+        }
+      ],
+      "steps": [
+        "五花肉切块冷水下锅焯透",
+        "干锅炒糖色至枣红",
+        "下肉块裹匀糖色，加生抽老抽",
+        "加热水小火焖 60 分钟，大火收汁"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E7%BA%A2%E7%83%A7%E8%82%89%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "梅菜扣肉": {
+    "dish": "梅菜扣肉",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10002,
+      "origin": "generated",
+      "name": "梅菜扣肉",
+      "cook_time_minutes": 120,
+      "difficulty": "中等",
+      "rating": null,
+      "servings": 4,
+      "description": "五花肉先煮后炸再与梅干菜同蒸，皮糯肉烂、肥而不腻，关键是蒸够时间让肉吸足梅菜香。",
+      "required": [
+        {
+          "name": "五花肉",
+          "amount": "600 克"
+        },
+        {
+          "name": "姜",
+          "amount": "4 片"
+        },
+        {
+          "name": "葱",
+          "amount": "1 段"
+        },
+        {
+          "name": "梅干菜",
+          "amount": "80 克"
+        }
+      ],
+      "optional": [
+        {
+          "name": "大蒜",
+          "amount": "3 瓣"
+        },
+        {
+          "name": "冰糖",
+          "amount": "10 克"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 汤匙"
+        },
+        {
+          "name": "老抽",
+          "amount": "1 汤匙"
+        },
+        {
+          "name": "料酒",
+          "amount": "2 汤匙"
+        },
+        {
+          "name": "蚝油",
+          "amount": "1 汤匙"
+        },
+        {
+          "name": "食用油",
+          "amount": "适量"
+        },
+        {
+          "name": "八角",
+          "amount": "2 个"
+        }
+      ],
+      "steps": [
+        "梅干菜提前用温水浸泡 30 分钟，反复淘洗去沙，挤干水分后切碎备用。",
+        "五花肉冷水下锅，加姜片、葱段和料酒，大火煮开后转中火煮 20 分钟至七成熟，捞出擦干，肉皮抹少许老抽。",
+        "锅中放少量油，五花肉皮朝下小火煎炸至皮起虎皮色，捞出放入冷水中泡 10 分钟，再切成约 0.5 厘米厚片。",
+        "锅留底油，下姜蒜末和八角炒香，加入梅干菜炒干水分，调入生抽、老抽、蚝油、冰糖和白胡椒粉，加少量水焖 5 分钟。",
+        "取深碗，将五花肉片皮朝下整齐码入，铺上炒好的梅干菜并压实，淋入剩余酱汁。",
+        "将碗放入蒸锅，大火上汽后转中小火蒸 60 至 90 分钟，至肉片软烂入味。",
+        "取出蒸碗，倒扣在盘中，将原汁倒入锅中勾薄芡，淋在扣肉上即可。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E6%A2%85%E8%8F%9C%E6%89%A3%E8%82%89%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "糖醋排骨": {
+    "dish": "糖醋排骨",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 155,
+      "origin": "seed",
+      "name": "糖醋排骨",
+      "cook_time_minutes": 45,
+      "difficulty": "中等",
+      "rating": 4.8,
+      "servings": 3,
+      "description": "糖色炒到位，颜色才透亮。",
+      "required": [
+        {
+          "name": "猪排骨",
+          "amount": "500 克"
+        }
+      ],
+      "optional": [
+        {
+          "name": "冰糖",
+          "amount": "20 克"
+        },
+        {
+          "name": "姜",
+          "amount": "3 片"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 大勺"
+        },
+        {
+          "name": "香醋",
+          "amount": "3 大勺"
+        },
+        {
+          "name": "料酒",
+          "amount": "1 大勺"
+        },
+        {
+          "name": "芝麻",
+          "amount": "少许"
+        }
+      ],
+      "steps": [
+        "排骨冷水下锅焯去血沫，捞出沥干",
+        "锅中少油下冰糖，小火炒到琥珀色",
+        "下排骨翻匀上色",
+        "加生抽、香醋、料酒、姜片与热水没过排骨",
+        "小火焖 25 分钟，大火收汁到亮油，撒芝麻"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E7%B3%96%E9%86%8B%E6%8E%92%E9%AA%A8%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "蛋包饭": {
+    "dish": "蛋包饭",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10003,
+      "origin": "generated",
+      "name": "蛋包饭",
+      "cook_time_minutes": 25,
+      "difficulty": "中等",
+      "rating": null,
+      "servings": 2,
+      "description": "关键在蛋皮要薄嫩完整，炒饭番茄味浓郁，包好后淋酱更香。",
+      "required": [
+        {
+          "name": "鸡蛋",
+          "amount": "4 个"
+        },
+        {
+          "name": "洋葱",
+          "amount": "1/2 个"
+        },
+        {
+          "name": "鸡腿",
+          "amount": "150 克"
+        },
+        {
+          "name": "米饭",
+          "amount": "2 碗"
+        }
+      ],
+      "optional": [
+        {
+          "name": "胡萝卜",
+          "amount": "30 克"
+        },
+        {
+          "name": "玉米",
+          "amount": "30 克"
+        },
+        {
+          "name": "牛奶",
+          "amount": "1 大勺"
+        },
+        {
+          "name": "盐",
+          "amount": "适量"
+        }
+      ],
+      "steps": [
+        "鸡腿肉、洋葱和胡萝卜切小丁，青豆、玉米粒备好。",
+        "锅中放少许油，先炒鸡腿肉至变色，再加入洋葱、胡萝卜、青豆和玉米粒炒香。",
+        "加入米饭炒散，放番茄酱、盐和黑胡椒调味，炒匀后盛出备用。",
+        "鸡蛋打散，加入牛奶和少许盐搅匀。",
+        "平底锅小火融化黄油，倒入蛋液摊成薄蛋皮，待底部凝固、表面微湿时关火。",
+        "将炒饭放在蛋皮一侧，用锅铲把另一侧蛋皮折过来盖住，小心滑入盘中。",
+        "在蛋包饭表面挤上番茄酱，撒欧芹碎即可。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E8%9B%8B%E5%8C%85%E9%A5%AD%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "扬州炒饭": {
+    "dish": "扬州炒饭",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 158,
+      "origin": "seed",
+      "name": "扬州炒饭",
+      "cook_time_minutes": 20,
+      "difficulty": "简单",
+      "rating": 4.5,
+      "servings": 2,
+      "description": "隔夜饭炒出来才粒粒分明。",
+      "required": [
+        {
+          "name": "鸡蛋",
+          "amount": "2 个"
+        },
+        {
+          "name": "虾",
+          "amount": "100 克"
+        },
+        {
+          "name": "米饭",
+          "amount": "2 碗"
+        }
+      ],
+      "optional": [
+        {
+          "name": "胡萝卜",
+          "amount": "半根"
+        },
+        {
+          "name": "玉米",
+          "amount": "半碗"
+        },
+        {
+          "name": "葱",
+          "amount": "1 根"
+        },
+        {
+          "name": "盐",
+          "amount": "少许"
+        },
+        {
+          "name": "食用油",
+          "amount": "适量"
+        }
+      ],
+      "steps": [
+        "隔夜米饭提前打散",
+        "虾去线切丁，胡萝卜切小丁",
+        "热油炒散蛋液盛出",
+        "底油炒香虾仁、胡萝卜与玉米",
+        "下米饭中火压散炒到粒粒分明，回鸡蛋加盐与葱花"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E6%89%AC%E5%B7%9E%E7%82%92%E9%A5%AD%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "莴笋肉丝": {
+    "dish": "莴笋肉丝",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10005,
+      "origin": "generated",
+      "name": "莴笋肉丝",
+      "cook_time_minutes": 25,
+      "difficulty": "简单",
+      "rating": null,
+      "servings": 3,
+      "description": "肉丝提前上浆滑油，莴笋大火快炒保持脆嫩，全程不超过两分钟出锅。",
+      "required": [
+        {
+          "name": "生抽",
+          "amount": "15 毫升"
+        },
+        {
+          "name": "盐",
+          "amount": "4 克"
+        },
+        {
+          "name": "食用油",
+          "amount": "40 毫升"
+        }
+      ],
+      "optional": [
+        {
+          "name": "大蒜",
+          "amount": "3 瓣"
+        },
+        {
+          "name": "料酒",
+          "amount": "10 毫升"
+        },
+        {
+          "name": "干辣椒",
+          "amount": "3 个"
+        },
+        {
+          "name": "白糖",
+          "amount": "2 克"
+        },
+        {
+          "name": "香油",
+          "amount": "5 毫升"
+        }
+      ],
+      "steps": [
+        "猪里脊先放冰箱冷冻 20 分钟至微硬，再顺纹切成 3 毫米粗、6 厘米长的细丝，切太粗不易熟，太细容易炒老。",
+        "肉丝放入碗中，加 4 克干淀粉、半个蛋清、10 毫升料酒、1 克盐和 5 毫升生抽，用手抓拌 1 分钟至发粘，静置腌 10 分钟。",
+        "莴笋削去外皮和白色粗筋，先斜刀切成 5 厘米长段，再切成 3 毫米厚的片，最后切成长短一致的细丝；切好后不用泡水，直接备用。",
+        "蒜 3 瓣拍扁切末，干辣椒 3 个剪成小段抖掉辣椒籽，与蒜末分开放。",
+        "锅烧到冒青烟，倒入 20 毫升油转一圈润锅，油温五成热（筷子插入冒小泡）时下肉丝，用筷子快速划散，肉丝全部变白约 30 秒立刻盛出，锅里留底油。",
+        "锅内补 15 毫升油，中火下干辣椒段和蒜末炒 10 秒出香味，注意别炒焦。",
+        "转最大火，倒入莴笋丝，翻炒 30 秒至颜色变翠绿、边缘略透明。",
+        "沿锅边淋入剩余 10 毫升生抽，加 3 克盐、2 克白糖、1 克白胡椒粉，大火翻炒 20 秒让味道均匀。",
+        "把肉丝倒回锅中，大火快速翻匀 30 秒，让肉丝裹上汤汁，尝一根莴笋，脆而带一点咸鲜即可。",
+        "关火，淋 5 毫升香油拌匀，立即盛盘，久放锅中余温会让莴笋出水变软。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E8%8E%B4%E7%AC%8B%E8%82%89%E4%B8%9D%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "清炒虾仁": {
+    "dish": "清炒虾仁",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10006,
+      "origin": "generated",
+      "name": "清炒虾仁",
+      "cook_time_minutes": 20,
+      "difficulty": "中等",
+      "rating": null,
+      "servings": 2,
+      "description": "虾仁先上浆再大火快炒，保持弹嫩不出水。",
+      "required": [
+        {
+          "name": "料酒",
+          "amount": "2 汤匙"
+        },
+        {
+          "name": "盐",
+          "amount": "3 克"
+        },
+        {
+          "name": "食用油",
+          "amount": "2 汤匙"
+        }
+      ],
+      "optional": [
+        {
+          "name": "大蒜",
+          "amount": "1 瓣"
+        },
+        {
+          "name": "黄瓜",
+          "amount": "半根"
+        },
+        {
+          "name": "姜",
+          "amount": "2 片"
+        },
+        {
+          "name": "胡萝卜",
+          "amount": "少许"
+        },
+        {
+          "name": "香油",
+          "amount": "几滴"
+        }
+      ],
+      "steps": [
+        "若用冷冻虾仁，提前放冷藏解冻；鲜虾去壳去虾线，冲洗两遍后用厨房纸吸干表面水分。",
+        "虾仁放碗中，加 1 个蛋清、1 汤匙料酒、2 克盐、0.5 克白胡椒粉，抓匀至发黏。",
+        "加入 1 汤匙玉米淀粉抓匀，再淋 1 茶匙食用油封住水分，腌制 10 分钟。",
+        "葱白、姜、蒜切末；黄瓜去瓤切丁，胡萝卜切小丁，豌豆洗净备用。",
+        "小碗中加 2 汤匙清水、1 茶匙玉米淀粉、1 克盐和几滴香油，搅匀成薄芡汁。",
+        "锅烧热后倒 2 汤匙油，油温四成热时下虾仁，快速划散，变色卷曲立刻盛出，约 30 到 40 秒。",
+        "锅中留底油，中小火下葱姜蒜末爆香，闻到香味即可，不要炒焦。",
+        "加入豌豆和胡萝卜丁翻炒 1 分钟，若用黄瓜丁则留到后面再放。",
+        "转大火，倒回虾仁，沿锅边淋 1 汤匙料酒，快速翻炒 10 秒。",
+        "倒入调好的薄芡汁，大火翻炒 5 到 10 秒，让芡汁均匀裹住虾仁，再加入黄瓜丁翻匀。",
+        "尝味后按需补盐，淋几滴香油，立刻关火装盘，虾仁应弹嫩不缩水。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E6%B8%85%E7%82%92%E8%99%BE%E4%BB%81%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "担担面": {
+    "dish": "担担面",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10001,
+      "origin": "generated",
+      "name": "担担面",
+      "cook_time_minutes": 30,
+      "difficulty": "中等",
+      "rating": null,
+      "servings": 2,
+      "description": "关键在肉臊要炒得干香酥脆，碗底调料用面汤澥开、麻香辣香才能挂住面条。",
+      "required": [
+        {
+          "name": "大蒜",
+          "amount": "3 瓣"
+        },
+        {
+          "name": "葱",
+          "amount": "2 根"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 汤匙"
+        },
+        {
+          "name": "香醋",
+          "amount": "1 汤匙"
+        }
+      ],
+      "optional": [
+        {
+          "name": "白糖",
+          "amount": "1 小勺"
+        },
+        {
+          "name": "香油",
+          "amount": "1 小勺"
+        }
+      ],
+      "steps": [
+        "蒜切末、葱切葱花，芽菜略剁碎备用；芝麻酱先用 1 汤匙温水面汤慢慢澥开成流动状。",
+        "锅烧热放少许油，下猪肉末中火煸炒，炒散炒到出油、颜色变深微微发干发酥。",
+        "下芽菜碎（和姜末）与肉末同炒出香，加 1 汤匙生抽、1 小勺白糖翻匀，盛出即为肉臊。",
+        "调碗底：每只碗中放澥好的芝麻酱、生抽、香醋、红油辣椒、花椒粉、蒜末、香油和少许白糖，搅匀成稠糊。",
+        "宽水加少许盐烧开，下面条煮至刚断生（约 2 分钟），若加青菜可在最后 30 秒同煮。",
+        "舀 2 汤匙滚面汤冲入碗底，把调料彻底化开成红亮汤汁，再捞入面条。",
+        "面上铺肉臊，撒花生碎、葱花和熟白芝麻，吃前从底往上充分拌匀即可。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E6%8B%85%E6%8B%85%E9%9D%A2%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "炸酱面": {
+    "dish": "炸酱面",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 168,
+      "origin": "seed",
+      "name": "炸酱面",
+      "cook_time_minutes": 30,
+      "difficulty": "简单",
+      "rating": 4.6,
+      "servings": 2,
+      "description": "酱要炸到油亮才香。",
+      "required": [
+        {
+          "name": "猪肉末",
+          "amount": "150 克"
+        },
+        {
+          "name": "面条",
+          "amount": "200 克"
+        }
+      ],
+      "optional": [
+        {
+          "name": "黄瓜",
+          "amount": "1 根"
+        },
+        {
+          "name": "姜",
+          "amount": "1 小块"
+        },
+        {
+          "name": "豆芽",
+          "amount": "1 小把"
+        },
+        {
+          "name": "葱",
+          "amount": "1 根"
+        },
+        {
+          "name": "豆瓣酱",
+          "amount": "2 大勺"
+        },
+        {
+          "name": "食用油",
+          "amount": "适量"
+        }
+      ],
+      "steps": [
+        "热油下肉末炒到吐油",
+        "加葱姜末炒香",
+        "下豆瓣酱与半碗水，中火炸 10 分钟到酱色油亮",
+        "另锅煮面，捞出过凉水",
+        "黄瓜切丝、豆芽焯熟做面码，浇上炸酱拌匀"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E7%82%B8%E9%85%B1%E9%9D%A2%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "麻婆豆腐": {
+    "dish": "麻婆豆腐",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 106,
+      "origin": "seed",
+      "name": "麻婆豆腐",
+      "cook_time_minutes": 25,
+      "difficulty": "中等",
+      "rating": 4.6,
+      "servings": 2,
+      "description": "麻辣鲜香，配米饭一绝。",
+      "required": [
+        {
+          "name": "豆腐",
+          "amount": "1 盒"
+        },
+        {
+          "name": "牛肉末",
+          "amount": "100 克"
+        }
+      ],
+      "optional": [
+        {
+          "name": "葱",
+          "amount": "少许"
+        },
+        {
+          "name": "豆瓣酱",
+          "amount": "1 勺"
+        },
+        {
+          "name": "花椒",
+          "amount": "1 小勺"
+        }
+      ],
+      "steps": [
+        "豆腐切块用淡盐水焯过",
+        "炒香豆瓣酱与牛肉末",
+        "下豆腐轻推，加水淀粉勾芡",
+        "出锅撒花椒粉与葱花"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E9%BA%BB%E5%A9%86%E8%B1%86%E8%85%90%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "家常豆腐": {
+    "dish": "家常豆腐",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10008,
+      "origin": "generated",
+      "name": "家常豆腐",
+      "cook_time_minutes": 25,
+      "difficulty": "简单",
+      "rating": null,
+      "servings": 2,
+      "description": "关键点是先把豆腐煎至两面金黄定形，再用豆瓣酱和少量汤汁烧入味，轻推防碎。",
+      "required": [
+        {
+          "name": "青椒",
+          "amount": "1 个"
+        },
+        {
+          "name": "豆腐",
+          "amount": "400 克"
+        },
+        {
+          "name": "胡萝卜",
+          "amount": "半根"
+        }
+      ],
+      "optional": [
+        {
+          "name": "大蒜",
+          "amount": "3 瓣"
+        },
+        {
+          "name": "五花肉",
+          "amount": "100 克"
+        },
+        {
+          "name": "姜",
+          "amount": "1 小块"
+        },
+        {
+          "name": "葱",
+          "amount": "1 根"
+        },
+        {
+          "name": "生抽",
+          "amount": "1 汤匙"
+        },
+        {
+          "name": "蚝油",
+          "amount": "半汤匙"
+        },
+        {
+          "name": "豆瓣酱",
+          "amount": "1 汤匙"
+        },
+        {
+          "name": "淀粉",
+          "amount": "1 茶匙"
+        },
+        {
+          "name": "白糖",
+          "amount": "半茶匙"
+        },
+        {
+          "name": "盐",
+          "amount": "适量"
+        },
+        {
+          "name": "食用油",
+          "amount": "适量"
+        }
+      ],
+      "steps": [
+        "北豆腐切成约 1 厘米厚、3 厘米见方的片，用厨房纸吸干表面水分。",
+        "青椒去籽切菱形片，胡萝卜切薄片，若用干木耳提前泡发撕小朵，蒜姜切末，葱切段。",
+        "平底锅加 2 汤匙食用油，中火烧热后下豆腐片，煎至底面金黄再翻面，两面金黄后盛出。",
+        "锅内留底油，若加五花肉，下五花肉片中火煸炒至变色出油；若不加肉，直接下蒜末姜末。",
+        "加入 1 汤匙豆瓣酱，小火炒出红油，再放青椒片、胡萝卜片和木耳，大火翻炒约 1 分钟至断生。",
+        "倒入煎好的豆腐，加 1 汤匙生抽、半汤匙蚝油、半茶匙白糖和 100 毫升清水，用锅铲背面轻推均匀。",
+        "转中小火烧 2 到 3 分钟让豆腐入味，期间不要大力翻炒，避免豆腐碎烂。",
+        "取 1 茶匙淀粉加 2 汤匙清水调成水淀粉，沿锅边淋入，晃锅收汁至汤汁浓稠挂勺。",
+        "尝味后按需补少许盐，撒葱段，关火出锅装盘。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E5%AE%B6%E5%B8%B8%E8%B1%86%E8%85%90%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "豆腐花": {
+    "dish": "豆腐花",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10009,
+      "origin": "generated",
+      "name": "豆腐花",
+      "cook_time_minutes": 50,
+      "difficulty": "中等",
+      "rating": null,
+      "servings": 4,
+      "description": "关键是豆浆必须煮熟并降温到 80-85°C，冲入内酯水后保温静置，期间不能搅拌或晃动。",
+      "required": [
+        {
+          "name": "黄豆",
+          "amount": "150 克"
+        },
+        {
+          "name": "清水",
+          "amount": "1200 毫升（打浆用）"
+        },
+        {
+          "name": "葡萄糖酸内酯",
+          "amount": "3 克"
+        }
+      ],
+      "optional": [
+        {
+          "name": "香菜",
+          "amount": "少许"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 汤匙"
+        },
+        {
+          "name": "香油",
+          "amount": "1 茶匙"
+        }
+      ],
+      "steps": [
+        "干黄豆 150 克挑去坏豆，洗净后加 800 毫升冷水浸泡 8 小时左右，夏天放冰箱冷藏，泡到豆子完全膨胀、用手一捏就碎。",
+        "泡好的黄豆沥干水分，放入破壁机，加 1200 毫升清水，高速搅打 3 分钟，打到没有明显粗颗粒。",
+        "用细纱布或 80 目滤网把豆浆过滤到厚底锅中，豆渣用纱布包住挤干，尽量多挤出豆浆。",
+        "生豆浆中火加热，边煮边用勺子搅底防糊，煮到完全沸腾后转小火再煮 5 分钟，彻底煮熟并撇去浮沫。",
+        "关火后让豆浆降温到 80-85°C；没有温度计就静置 3-5 分钟，看到表面结出一层薄油皮即可。",
+        "取葡萄糖酸内酯 3 克放入保温容器（电饭煲内胆或砂锅），加 20 毫升约 40°C 温水搅拌化开。",
+        "将 80-85°C 的豆浆从约 20 厘米高处一次性冲入内酯水中，冲完立刻停止，千万不要搅拌。",
+        "马上盖上容器盖子，静置保温 15-20 分钟，期间不要移动或晃动，凝固成颤巍巍的豆花即成。",
+        "用薄勺把豆花舀入碗中，按口味淋 2 汤匙生抽、1 茶匙香油，撒榨菜碎、虾皮、紫菜、葱花、辣椒油和香菜，趁热吃。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E8%B1%86%E8%85%90%E8%8A%B1%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "香菇蒸鸡": {
+    "dish": "香菇蒸鸡",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 169,
+      "origin": "seed",
+      "name": "香菇蒸鸡",
+      "cook_time_minutes": 40,
+      "difficulty": "简单",
+      "rating": 4.5,
+      "servings": 3,
+      "description": "腌够时间，蒸出来才嫩。",
+      "required": [
+        {
+          "name": "香菇",
+          "amount": "6 朵"
+        },
+        {
+          "name": "鸡腿",
+          "amount": "2 只"
+        }
+      ],
+      "optional": [
+        {
+          "name": "姜",
+          "amount": "3 片"
+        },
+        {
+          "name": "葱",
+          "amount": "1 根"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 大勺"
+        },
+        {
+          "name": "料酒",
+          "amount": "1 大勺"
+        },
+        {
+          "name": "淀粉",
+          "amount": "1 小勺"
+        },
+        {
+          "name": "香油",
+          "amount": "几滴"
+        }
+      ],
+      "steps": [
+        "鸡腿剁小块，加生抽、料酒、姜片、淀粉与香油抓匀腌 15 分钟",
+        "香菇泡发切片铺在盘底",
+        "鸡块铺在香菇上",
+        "水开后大火蒸 18 分钟",
+        "撒葱花，把蒸出的汤汁淋回去"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E9%A6%99%E8%8F%87%E8%92%B8%E9%B8%A1%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "地三鲜": {
+    "dish": "地三鲜",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 150,
+      "origin": "seed",
+      "name": "地三鲜",
+      "cook_time_minutes": 20,
+      "difficulty": "中等",
+      "rating": 4.6,
+      "servings": 2,
+      "description": "东北三样蔬菜，油亮下饭。",
+      "required": [
+        {
+          "name": "青椒",
+          "amount": "2 个"
+        },
+        {
+          "name": "土豆",
+          "amount": "2 个"
+        },
+        {
+          "name": "茄子",
+          "amount": "2 根"
+        }
+      ],
+      "optional": [
+        {
+          "name": "大蒜",
+          "amount": "3 瓣"
+        },
+        {
+          "name": "生抽",
+          "amount": "1 大勺"
+        },
+        {
+          "name": "淀粉",
+          "amount": "1 大勺"
+        },
+        {
+          "name": "白糖",
+          "amount": "1 小勺"
+        },
+        {
+          "name": "食用油",
+          "amount": "适量"
+        }
+      ],
+      "steps": [
+        "土豆与茄子切滚刀块，青椒切块",
+        "茄子拍一层薄淀粉，下油锅炸至微黄捞出",
+        "土豆块同样炸到边缘金黄",
+        "底油爆香蒜末，回锅加生抽与糖炒匀",
+        "下青椒块翻匀，勾薄芡出锅"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E5%9C%B0%E4%B8%89%E9%B2%9C%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "鸡蛋羹": {
+    "dish": "鸡蛋羹",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 164,
+      "origin": "seed",
+      "name": "鸡蛋羹",
+      "cook_time_minutes": 15,
+      "difficulty": "简单",
+      "rating": 4.5,
+      "servings": 2,
+      "description": "水和蛋 1.5:1，蒸出来才滑。",
+      "required": [
+        {
+          "name": "鸡蛋",
+          "amount": "3 个"
+        }
+      ],
+      "optional": [
+        {
+          "name": "葱",
+          "amount": "1 根"
+        },
+        {
+          "name": "生抽",
+          "amount": "1 小勺"
+        },
+        {
+          "name": "香油",
+          "amount": "几滴"
+        },
+        {
+          "name": "盐",
+          "amount": "少许"
+        }
+      ],
+      "steps": [
+        "鸡蛋打散加少许盐，按 1:1.5 兑温水搅匀",
+        "过筛滤掉泡沫倒进碗里",
+        "盖保鲜膜扎孔，水开后中火蒸 10 分钟",
+        "取出淋生抽与香油，撒葱花"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E9%B8%A1%E8%9B%8B%E7%BE%B9%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  },
+  "臭豆腐": {
+    "dish": "臭豆腐",
+    "source": "library",
+    "degraded": false,
+    "recipe": {
+      "id": 10007,
+      "origin": "generated",
+      "name": "臭豆腐",
+      "cook_time_minutes": 30,
+      "difficulty": "中等",
+      "rating": null,
+      "servings": 2,
+      "description": "关键是用生胚沥干水分，中火炸定型再复炸，外壳才酥脆。",
+      "required": [
+        {
+          "name": "食用油",
+          "amount": "800 毫升（实耗约80毫升）"
+        }
+      ],
+      "optional": [
+        {
+          "name": "大蒜",
+          "amount": "4 瓣"
+        },
+        {
+          "name": "香菜",
+          "amount": "2 棵"
+        },
+        {
+          "name": "生抽",
+          "amount": "2 汤匙"
+        },
+        {
+          "name": "香醋",
+          "amount": "1 汤匙"
+        },
+        {
+          "name": "白糖",
+          "amount": "1 茶匙"
+        }
+      ],
+      "steps": [
+        "将臭豆腐生胚 12 块从包装中取出，放入漏网中沥干水分约 5 分钟，再用厨房纸轻轻吸干表面水分，避免下锅炸油。",
+        "蒜 4 瓣剁成蒜蓉，小米辣 2 个切圈，香菜 2 棵切碎；取小碗加入生抽 2 汤匙、香醋 1 汤匙、白糖 1 茶匙、辣椒油 2 汤匙、芝麻酱 1 汤匙和凉白开 2 汤匙，搅匀成酱汁。",
+        "锅中倒入食用油 800 毫升，中火加热至 170℃左右；没有温度计可插入木筷子，筷子周围冒出密集小泡即可。",
+        "沿锅边轻轻放入臭豆腐生胚，一次不要超过 6 块，保持中火炸 2 分钟定型后再翻动，避免粘连破皮。",
+        "炸至臭豆腐表面金黄、外壳鼓起变硬，约 3 到 4 分钟，用漏勺捞出沥油；升高油温至 190℃，复炸 30 秒逼出油分，捞出沥油。",
+        "将炸好的臭豆腐摆盘，用筷子在每块中间戳一个小孔，方便灌入酱汁。",
+        "趁热将调好的酱汁淋在臭豆腐上，撒蒜蓉、小米辣和香菜，静置 1 分钟入味即可食用。"
+      ],
+      "video_url": "https://search.bilibili.com/all?keyword=%E8%87%AD%E8%B1%86%E8%85%90%20%E5%81%9A%E6%B3%95"
+    },
+    "reason": null
+  }
+}

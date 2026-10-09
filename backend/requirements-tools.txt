@@ -1,0 +1,16 @@
+# 一次性转换工具的依赖，不进后端运行时
+#
+# 用途：判定训练产出的 .pt 属于哪种存档，并转成 ONNX
+#       （backend/tools/inspect_checkpoint.py）
+# 安装： .venv\Scripts\python.exe -m pip install -r backend/requirements-tools.txt
+#
+# 后端运行时只需要 onnxruntime，不要把 torch / timm 装进部署环境（体积 GB 级）。
+# 下列版本为本项目实测通过的组合。
+
+torch>=2.3
+torchvision>=0.18
+timm>=1.0          # timm 架构（如 resnet50d）必须靠它重建
+onnx>=1.14
+onnxruntime>=1.16
+numpy>=1.23
+pillow>=9.0

@@ -1,0 +1,55 @@
+# 构建上下文只放镜像真正需要的文件：代码与依赖清单进去，权重、数据集、
+# 交付物、依赖目录一律挡在外面，否则上下文会从几 MB 涨到近 1 GB。
+#
+# 目录规则统一用 / 开头锚定到上下文根：backend/app/models 是后端代码包，
+# 不能被子目录里同名的 models 规则误伤（同名的还有 core、api 等，一并避开）。
+
+/.git
+/.github
+/.codex-build
+/.venv
+/venv
+/docs
+/tests
+/training
+/templates
+/ONNX
+/ml
+/models
+/drafts
+
+# prototype/ 里的 preprocess.py 是识别器的预处理实现，必须进镜像；
+# 同目录的构建脚本与 HTML 原型不进去（在 Dockerfile 里按文件 COPY）。
+/prototype/build_dish_prototype.py
+/prototype/dish.html
+/prototype/index.html
+/prototype/__pycache__
+
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/*.egg-info
+
+/frontend/node_modules
+/frontend/dist
+/frontend/coverage
+
+# 权重与数据集走挂载卷，不进镜像
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.zip
+
+# 本地库与环境变量：Key 只从宿主机注入，不烤进镜像
+*.db
+*.sqlite3
+.env
+.env.local
+
+/.vscode
+/.idea
+.DS_Store
+~$*

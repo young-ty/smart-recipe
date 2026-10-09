@@ -1,0 +1,501 @@
+<title>ConvNeXt vs ResNet50d</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --page:#eef1f4;
+    --surface:#ffffff;
+    --ink:#0f1319;
+    --ink-2:#4b535e;
+    --ink-3:#7c8695;
+    --rule:#d7dce2;
+    --rule-soft:#e7ebef;
+    --accent:#1c5cab;
+    --s1:#2a78d6;
+    --s2:#eb6834;
+    --tie:#b6bec8;
+    --wedge:rgba(42,120,214,.10);
+    --on-s1:#ffffff;
+    --on-s2:#131313;
+    --on-tie:#0f1319;
+    --serif:"Noto Serif SC",Georgia,"Songti SC",serif;
+    --sans:"Noto Sans SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --page:#0b0d10;
+      --surface:#14171c;
+      --ink:#f1f3f6;
+      --ink-2:#a7b0bb;
+      --ink-3:#767f8b;
+      --rule:#252b32;
+      --rule-soft:#1b2025;
+      --accent:#5598e7;
+      --s1:#3987e5;
+      --s2:#d95926;
+      --tie:#4a535d;
+      --wedge:rgba(57,135,229,.15);
+      --on-s1:#0b0d10;
+      --on-s2:#0b0d10;
+      --on-tie:#f1f3f6;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:#0b0d10;
+    --surface:#14171c;
+    --ink:#f1f3f6;
+    --ink-2:#a7b0bb;
+    --ink-3:#767f8b;
+    --rule:#252b32;
+    --rule-soft:#1b2025;
+    --accent:#5598e7;
+    --s1:#3987e5;
+    --s2:#d95926;
+    --tie:#4a535d;
+    --wedge:rgba(57,135,229,.15);
+    --on-s1:#0b0d10;
+    --on-s2:#0b0d10;
+    --on-tie:#f1f3f6;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--page);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:880px;
+    margin:0 auto;
+    padding-inline:20px;
+    padding-block:40px 72px;
+    display:flex;
+    flex-direction:column;
+    gap:38px;
+  }
+
+  /* ---- masthead ---- */
+  .masthead{display:flex;flex-direction:column;gap:14px}
+  .eyebrow{
+    font-family:var(--mono);font-size:11.5px;font-weight:500;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--accent);
+  }
+  h1{
+    font-family:var(--serif);font-weight:700;
+    font-size:clamp(28px,5.4vw,42px);line-height:1.2;
+    letter-spacing:-.01em;margin:0;text-wrap:balance;
+  }
+  .lede{margin:0;max-width:62ch;color:var(--ink-2);font-size:15.5px}
+  .lede b{color:var(--ink);font-weight:500}
+
+  /* ---- section ---- */
+  section{border-top:1px solid var(--rule);padding-top:20px;display:flex;flex-direction:column;gap:16px}
+  .sec-label{
+    font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-3);
+  }
+  h2{
+    font-family:var(--serif);font-weight:600;font-size:20px;line-height:1.4;
+    margin:0;letter-spacing:-.005em;
+  }
+  p{margin:0;max-width:64ch;color:var(--ink-2)}
+  p.note{font-size:13.5px;line-height:1.65;color:var(--ink-3);max-width:68ch}
+  p.note b{color:var(--ink-2);font-weight:500}
+  code{font-family:var(--mono);font-size:.86em;color:var(--ink-2);word-break:break-all}
+
+  /* ---- tables ---- */
+  .scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:440px;font-size:14px}
+  caption{
+    caption-side:bottom;text-align:left;padding-top:10px;
+    font-size:12.5px;line-height:1.6;color:var(--ink-3);
+  }
+  th,td{padding:9px 12px;border-bottom:1px solid var(--rule-soft);text-align:right;vertical-align:baseline}
+  th:first-child,td:first-child{text-align:left;padding-left:0}
+  th:last-child,td:last-child{padding-right:0}
+  thead th{
+    font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.04em;
+    color:var(--ink-3);border-bottom:1px solid var(--rule);white-space:nowrap;
+  }
+  tbody td{font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:none}
+  td.k{color:var(--ink-2)}
+  td.d{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--accent)}
+  td.d.flat{color:var(--ink-3);font-weight:400}
+  .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:baseline}
+  .sw1{background:var(--s1)} .sw2{background:var(--s2)} .swt{background:var(--tie)}
+
+  /* ---- figures ---- */
+  figure{margin:0;display:flex;flex-direction:column;gap:12px}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--ink-2);font-family:var(--mono)}
+  .chart-host{position:relative}
+  .chart-host svg{display:block;width:100%;height:auto}
+  .tip{
+    position:absolute;pointer-events:none;opacity:0;transition:opacity .1s ease;
+    background:var(--surface);border:1px solid var(--rule);border-radius:7px;
+    padding:8px 11px;font-family:var(--mono);font-size:11.5px;line-height:1.6;
+    color:var(--ink-2);box-shadow:0 4px 14px rgba(0,0,0,.13);white-space:nowrap;z-index:2;
+  }
+  .tip.on{opacity:1}
+  .tip b{color:var(--ink);font-weight:500}
+  .tip .row{display:flex;justify-content:space-between;gap:16px}
+  figcaption{font-size:13px;line-height:1.65;color:var(--ink-3);max-width:68ch}
+  figcaption b{color:var(--ink-2);font-weight:500}
+
+  /* ---- SVG ink (classes, because presentation attributes reject var()) ---- */
+  .gl{stroke:var(--rule-soft);stroke-width:1}
+  .ax{stroke:var(--rule);stroke-width:1}
+  .tk{fill:var(--ink-3);font-family:var(--mono);font-size:11px}
+  .dl{fill:var(--ink-2);font-family:var(--mono);font-size:11px}
+  .wed{fill:var(--wedge)}
+  .ln1{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .ln2{fill:none;stroke:var(--s2);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .dot1{fill:var(--s1);fill-opacity:.5}
+  .dot2{fill:var(--s2);fill-opacity:.5}
+  .endcap{stroke:var(--surface);stroke-width:2}
+  .lb1{fill:var(--s1)}
+  .lb2{fill:var(--s2)}
+  .lbl{font-family:var(--mono);font-size:12px;font-weight:500}
+  .cross{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+  .seg1{fill:var(--s1)} .segt{fill:var(--tie)} .seg2{fill:var(--s2)}
+  .ink1{fill:var(--on-s1)} .inkt{fill:var(--on-tie)} .ink2{fill:var(--on-s2)}
+  .seglbl{font-family:var(--mono);font-size:12px;font-weight:500;text-anchor:middle}
+
+  .bars{display:flex;flex-direction:column;gap:16px}
+  .bar-row{display:grid;grid-template-columns:minmax(150px,1.1fr) 2.6fr;gap:16px;align-items:center}
+  .bar-name{font-family:var(--mono);font-size:11.5px;line-height:1.5;color:var(--ink-2)}
+  .bar-name span{display:block;color:var(--ink-3);font-size:10.5px}
+
+  details{border-top:1px solid var(--rule-soft);padding-top:10px}
+  summary{
+    cursor:pointer;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;
+    color:var(--ink-3);list-style:none;
+  }
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--accent)}
+  details[open] summary::before{content:"▾ "}
+  summary:hover{color:var(--ink-2)}
+  summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+  details table{margin-top:12px;min-width:340px}
+
+  ul.todo{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;max-width:68ch}
+  ul.todo li{padding-left:22px;position:relative;font-size:14px;color:var(--ink-2);line-height:1.7}
+  ul.todo li::before{
+    content:"";position:absolute;left:0;top:.62em;width:9px;height:9px;
+    border:1.5px solid var(--accent);border-radius:50%;
+  }
+  ul.todo b{color:var(--ink);font-weight:500}
+
+  footer{
+    border-top:1px solid var(--rule);padding-top:18px;
+    font-family:var(--mono);font-size:11.5px;line-height:2;color:var(--ink-3);
+  }
+  footer strong{color:var(--ink-2);font-weight:500;display:block;letter-spacing:.06em;margin-bottom:4px}
+
+  @media (max-width:640px){
+    .bar-row{grid-template-columns:1fr;gap:7px}
+    .wrap{padding-block:28px 56px;gap:30px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">ChineseFoodNet 208 类 · 同配方对比</div>
+    <h1>ConvNeXt vs ResNet50d</h1>
+    <p class="lede">同一套配方（lr 1e-4 · bs32 · 224px · 20 epoch · 同一 train/val/test 划分与预处理）下，
+      <code>convnext_base.fb_in22k_ft_in1k</code> 的 test top-1 比 <code>resnet50d.ra2_in1k</code>
+      高 <b>3.13 个点</b>（82.84% vs 79.71%），代价是单 epoch 时间 <b>2.3 倍</b>。
+      差距随收敛收窄——第 1 个 epoch 差 9.4 点，第 20 个 epoch 差 3.5 点；逐类看是全面优势，不是个别类。</p>
+  </header>
+
+  <section>
+    <div class="sec-label">主对比</div>
+    <h2>20 epoch @224，唯一变量是骨干网络</h2>
+    <div class="scroll">
+      <table>
+        <caption>两个 run 的 test 集同为 20 310 张。run 目录：<code>runs/20260916-134843</code>（ResNet）、<code>runs/final-cnxb-224</code>（ConvNeXt）。</caption>
+        <thead>
+          <tr>
+            <th>指标</th>
+            <th><span class="swatch sw2"></span>ResNet50d</th>
+            <th><span class="swatch sw1"></span>ConvNeXt-Base</th>
+            <th>差</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">best val top-1</td><td>79.23%</td><td>82.66%</td><td class="d">+3.43</td></tr>
+          <tr><td class="k">test top-1</td><td>79.71%</td><td>82.84%</td><td class="d">+3.13</td></tr>
+          <tr><td class="k">test top-5</td><td>96.10%</td><td>96.36%</td><td class="d">+0.26</td></tr>
+          <tr><td class="k">test macro-F1</td><td>0.7779</td><td>0.8127</td><td class="d">+0.035</td></tr>
+          <tr><td class="k">208 类平均准确率</td><td>0.7762</td><td>0.8089</td><td class="d">+3.27</td></tr>
+          <tr><td class="k">单 epoch 耗时</td><td>561 s</td><td>1287 s</td><td class="d flat">2.30×</td></tr>
+          <tr><td class="k">ckpt 体积</td><td>288 MB</td><td>1.05 GB</td><td class="d flat">3.7×</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">收敛速度</div>
+    <h2>差距在第 10 个 epoch 就走平</h2>
+    <figure>
+      <div class="legend">
+        <span><span class="swatch sw1"></span>ConvNeXt-Base @224</span>
+        <span><span class="swatch sw2"></span>ResNet50d @224</span>
+      </div>
+      <div class="chart-host" id="host1">
+        <div class="tip" id="tip1"></div>
+      </div>
+      <figcaption>每 epoch 的 val top-1；阴影为两者差距，从 <b>+9.4</b> 收窄到 <b>+3.5</b> 并走平。
+        第 20 个 epoch 时 top-5 只差 <b>0.26</b> 个点（96.10 vs 96.36）——ResNet 的排序能力接近追平，差的是判别力。</figcaption>
+      <details>
+        <summary>逐 epoch 数值</summary>
+        <div class="scroll"><table id="tbl1"></table></div>
+      </details>
+    </figure>
+    <p class="note"><b>这个 3.13 是折中值，不是任何一方的峰值：</b>ConvNeXt 的 top-5 从 ep5 的 96.95 一路退化到 ep20 的 96.17（过训），
+      而 ResNet 到 ep20 仍在缓升（峰值在 ep16）。一个已过训、一个还欠训，两者都没停在各自最优。</p>
+  </section>
+
+  <section>
+    <div class="sec-label">同预算与分辨率</div>
+    <h2>5 epoch 差距更大；分辨率收益两边都没吃满</h2>
+    <div class="scroll">
+      <table>
+        <caption>5 epoch 那组是当初的选型依据（<code>_archive/pilot.py</code>）：换骨干 <b>+7.40</b>，提分辨率只 +2.17。</caption>
+        <thead>
+          <tr><th>5 epoch, val top-1</th><th>@224</th><th>更高分辨率</th><th>分辨率增益</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="k"><span class="swatch sw2"></span>ResNet50d</td><td>75.80%</td><td>@320 → 77.96%</td><td class="d">+2.17</td></tr>
+          <tr><td class="k"><span class="swatch sw1"></span>ConvNeXt-Base</td><td>83.20%</td><td>@288 → 84.16%</td><td class="d">+0.96</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b>「ResNet 更吃分辨率」这个结论证据偏弱。</b>ConvNeXt 的 288 那组用 bs16，
+      同样 5 epoch 优化步数翻倍，<code>_archive/run_final.cmd</code> 自己就标注了这个污染；
+      ResNet 只测了 224 / 320 两点，而 320 是 1.43× 放大、ConvNeXt 的 288 只有 1.29×，放大倍数也不对等。</p>
+  </section>
+
+  <section>
+    <div class="sec-label">逐类结果</div>
+    <h2>胜利是全类的，落败幅度都在 5 点内</h2>
+    <figure>
+      <div class="legend">
+        <span><span class="swatch sw1"></span>ConvNeXt 更好</span>
+        <span><span class="swatch swt"></span>打平</span>
+        <span><span class="swatch sw2"></span>ResNet 更好</span>
+      </div>
+      <div class="bars">
+        <div class="bar-row">
+          <div class="bar-name">20ep@224 vs 20ep@224<span>208 类</span></div>
+          <div class="chart-host" id="hostA"></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-name">5ep@288 vs 20ep@224<span>208 类</span></div>
+          <div class="chart-host" id="hostB"></div>
+        </div>
+      </div>
+      <figcaption>第二行是同一批类的另一种配比：<b>只训 5 个 epoch 的 ConvNeXt@288（175 胜）仍压过训满 20 epoch 的 ResNet@224</b>，平均每类 +5.21 点。</figcaption>
+    </figure>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>ConvNeXt 领先最多（样本 ≥30）</th><th>差距</th><th>ResNet 反超（样本 ≥30）</th><th>差距</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="k">炸鸡腿</td><td class="d">+25.6</td><td class="k">辣白菜</td><td class="d">−4.3</td></tr>
+          <tr><td class="k">荷包蛋</td><td class="d">+19.7</td><td class="k">小米粥</td><td class="d">−3.8</td></tr>
+          <tr><td class="k">炒蚕豆</td><td class="d">+18.3</td><td class="k">银耳汤</td><td class="d">−3.8</td></tr>
+          <tr><td class="k">烤鸭烧鹅</td><td class="d">+17.6</td><td class="k">麻婆豆腐</td><td class="d">−3.0</td></tr>
+          <tr><td class="k">肚丝</td><td class="d">+16.3</td><td class="k">剁椒鱼头</td><td class="d">−2.4</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">全 208 类计：<b>149 胜 / 17 平 / 42 负</b>，平均每类 +3.27 点。只看样本 ≥30 的 194 类，
+      是 <b>164 胜 / 16 平 / 14 负</b>——排除掉小类里「4 张错 1 张就是 25 点」的噪声后，优势反而更干净。
+      小米粥正是已知的易混类（大米粥／小米粥）。</p>
+  </section>
+
+  <section>
+    <div class="sec-label">未测项</div>
+    <h2>三件还没做、但最该做的事</h2>
+    <ul class="todo">
+      <li><b>ResNet 从未进入集成。</b>现有两个集成都是 ConvNeXt-only（224+288，以及加入 final-224 的三成员），
+        84.86% 里 ResNet 贡献为 0，两者的互补性完全没测过。而加第三个 ConvNeXt 只 +0.35（低于双成员的 +0.39），
+        同架构成员收益已在递减——换架构的成员更可能有增量。纯推理，两个成员各一次前向。</li>
+      <li><b>ResNet 没做 test 尺寸消融。</b>79.71% 是 @224 的值，是不是它的最优尺寸未知。
+        该 run 的 <code>summary.json</code>／<code>metrics.csv</code> 都没记录 img_size（ConvNeXt-288 那份是显式记了 288 的），
+        224 是从 <code>train.py --img-size</code> 的默认值推断的。</li>
+      <li><b>ResNet 只有一个完成的 20ep run。</b>另一次在 ep4 就停了（<code>runs/resnet50d-20ep</code>），
+        所以没有第二个种子可以估波动——而 3.13 点这个量级，恰好需要一个波动范围才能判断是否稳健。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <strong>数据源</strong>
+    runs/20260916-134843/{metrics,per_class_accuracy}.csv · test_metrics.json<br>
+    runs/final-cnxb-224/{metrics,per_class_accuracy}.csv · test_metrics.json<br>
+    runs/pilot-cnxb-224/ · runs/pilot-cnxb-288/ · runs/pilot-r50d-224/ · runs/pilot-r50d-320/<br>
+    runs/{sweep-cnxb-224,sweep-cnxb-288,ens-val-2m,ens-val-3m,ens-test-2m}.log · Food list - Menu.csv
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var CX = [76.8,79.4,80.7,80.7,81.0,81.5,81.5,81.7,81.5,81.5,81.8,81.8,82.1,82.3,82.2,82.4,82.5,82.7,82.6,82.6];
+  var RN = [67.4,72.5,74.1,75.3,76.1,76.6,77.5,77.7,78.2,78.2,78.1,78.6,78.7,78.8,79.0,79.2,79.1,79.1,79.2,79.1];
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, cls, attrs, text){
+    var e = document.createElementNS(NS, tag);
+    if (cls) e.setAttribute("class", cls);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  /* ---------- chart 1: val top-1 curves ---------- */
+  function lineChart(){
+    var host = document.getElementById("host1");
+    var tip  = document.getElementById("tip1");
+    var W = 780, H = 320, L = 46, R = 104, T = 18, B = 42;
+    var yMin = 65, yMax = 85, n = CX.length;
+    var x = function(i){ return L + i * (W - L - R) / (n - 1); };
+    var y = function(v){ return T + (yMax - v) * (H - T - B) / (yMax - yMin); };
+
+    var svg = el("svg", null, {viewBox:"0 0 " + W + " " + H, role:"img",
+      "aria-label":"每 epoch 的 val top-1：ConvNeXt-Base 从 76.8% 升到 82.6%，ResNet50d 从 67.4% 升到 79.1%，两者差距从 9.4 点收窄到 3.5 点"});
+
+    [65,70,75,80,85].forEach(function(v){
+      svg.appendChild(el("line", "gl", {x1:L, x2:W-R, y1:y(v), y2:y(v)}));
+      svg.appendChild(el("text", "tk", {x:L-10, y:y(v)+4, "text-anchor":"end"}, v + "%"));
+    });
+    svg.appendChild(el("line", "ax", {x1:L, x2:W-R, y1:y(yMin), y2:y(yMin)}));
+
+    [1,5,10,15,20].forEach(function(e){
+      svg.appendChild(el("text", "tk", {x:x(e-1), y:H-B+20, "text-anchor":"middle"}, e));
+    });
+    svg.appendChild(el("text", "tk", {x:(L+W-R)/2, y:H-4, "text-anchor":"middle"}, "epoch"));
+
+    var wedge = "M";
+    CX.forEach(function(v,i){ wedge += (i ? "L" : "") + x(i) + " " + y(v); });
+    for (var i = n - 1; i >= 0; i--) wedge += "L" + x(i) + " " + y(RN[i]);
+    svg.appendChild(el("path", "wed", {d:wedge + "Z"}));
+
+    // gap labels: start label hugs the upper curve (the lower one is too steep there),
+    // end label sits in the wedge where it has room to the left of the endpoints
+    svg.appendChild(el("text", "dl", {x:x(0) + 10, y:y(CX[0]) + 17, "text-anchor":"start"}, "Δ9.4"));
+    svg.appendChild(el("text", "dl", {x:x(n-1) - 10, y:y((CX[n-1] + RN[n-1]) / 2) + 4, "text-anchor":"end"}, "Δ3.5"));
+
+    function draw(data, lnCls, dotCls, lbCls, place){
+      var d = "M" + data.map(function(v,i){ return x(i) + " " + y(v); }).join("L");
+      svg.appendChild(el("path", lnCls, {d:d}));
+      data.forEach(function(v,i){ svg.appendChild(el("circle", dotCls, {cx:x(i), cy:y(v), r:2.2})); });
+      var last = data.length - 1;
+      svg.appendChild(el("circle", lbCls + " endcap", {cx:x(last), cy:y(data[last]), r:4.5}));
+      svg.appendChild(el("text", "lbl " + lbCls, {x:x(last) + 12, y:y(data[last]) + 4, "text-anchor":"start"}, place));
+    }
+    draw(RN, "ln2", "dot2", "lb2", "79.1");
+    draw(CX, "ln1", "dot1", "lb1", "82.6");
+
+    var cross = el("line", "cross", {y1:T, y2:H-B, opacity:0});
+    var h1 = el("circle", "lb1 endcap", {r:4.5, opacity:0});
+    var h2 = el("circle", "lb2 endcap", {r:4.5, opacity:0});
+    svg.appendChild(cross); svg.appendChild(h1); svg.appendChild(h2);
+    var hit = el("rect", null, {x:L-14, y:T, width:W-L-R+28, height:H-T-B, fill:"transparent"});
+    svg.appendChild(hit);
+
+    function show(ev){
+      var box = svg.getBoundingClientRect();
+      var px = (ev.clientX - box.left) / box.width * W;
+      var i = Math.max(0, Math.min(n - 1, Math.round((px - L) / ((W - L - R) / (n - 1)))));
+      cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", 1);
+      h1.setAttribute("cx", x(i)); h1.setAttribute("cy", y(CX[i])); h1.setAttribute("opacity", 1);
+      h2.setAttribute("cx", x(i)); h2.setAttribute("cy", y(RN[i])); h2.setAttribute("opacity", 1);
+      tip.innerHTML = '<div class="row"><span>epoch ' + (i+1) + '</span></div>' +
+        '<div class="row"><span style="color:var(--s1)">■ ConvNeXt</span><b>' + CX[i].toFixed(1) + '%</b></div>' +
+        '<div class="row"><span style="color:var(--s2)">■ ResNet50d</span><b>' + RN[i].toFixed(1) + '%</b></div>' +
+        '<div class="row"><span>Δ</span><b>+' + (CX[i]-RN[i]).toFixed(1) + '</b></div>';
+      tip.classList.add("on");
+      var hb = host.getBoundingClientRect();
+      var anchor = (x(i) / W) * box.width + (box.left - hb.left);
+      var left = anchor + 14;
+      if (left + tip.offsetWidth > hb.width) left = anchor - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + "px";
+      tip.style.top  = Math.max(0, (y(CX[i]) / H) * box.height + (box.top - hb.top) - tip.offsetHeight - 10) + "px";
+    }
+    hit.addEventListener("mousemove", show);
+    hit.addEventListener("mouseleave", function(){
+      cross.setAttribute("opacity", 0); h1.setAttribute("opacity", 0); h2.setAttribute("opacity", 0);
+      tip.classList.remove("on");
+    });
+    host.insertBefore(svg, tip);
+  }
+
+  /* ---------- table view of the same curve ---------- */
+  function curveTable(){
+    var t = document.getElementById("tbl1");
+    var head = document.createElement("thead");
+    head.innerHTML = '<tr><th>epoch</th><th>ConvNeXt</th><th>ResNet50d</th><th>Δ</th></tr>';
+    var body = document.createElement("tbody");
+    CX.forEach(function(v,i){
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td class="k">' + (i+1) + '</td><td>' + v.toFixed(1) + '%</td><td>' +
+        RN[i].toFixed(1) + '%</td><td class="d">+' + (v-RN[i]).toFixed(1) + '</td>';
+      body.appendChild(tr);
+    });
+    t.appendChild(head); t.appendChild(body);
+  }
+
+  /* ---------- chart 2: per-class win / tie / loss ---------- */
+  function barChart(hostId, wins, ties, losses){
+    var host = document.getElementById(hostId);
+    var total = wins + ties + losses;
+    var W = 520, H = 44, BH = 26, GAP = 2;
+    var svg = el("svg", null, {viewBox:"0 0 " + W + " " + H, role:"img",
+      "aria-label":"逐类胜负：ConvNeXt 更好 " + wins + " 类，打平 " + ties + " 类，ResNet 更好 " + losses + " 类"});
+    var defs = el("defs");
+    var cp = el("clipPath", null, {id:"cp-" + hostId});
+    cp.appendChild(el("rect", null, {x:0, y:(H-BH)/2, width:W, height:BH, rx:5}));
+    defs.appendChild(cp); svg.appendChild(defs);
+
+    var g = el("g", null, {"clip-path":"url(#cp-" + hostId + ")"});
+    var w1 = W * wins / total, w2 = W * ties / total;
+    var segs = [
+      {w:w1,          cls:"seg1", ink:"ink1", label:wins,   name:"ConvNeXt 更好"},
+      {w:w2,          cls:"segt", ink:"inkt", label:ties,   name:"打平"},
+      {w:W - w1 - w2, cls:"seg2", ink:"ink2", label:losses, name:"ResNet 更好"}
+    ];
+    var cx = 0;
+    segs.forEach(function(s, i){
+      var w = s.w - (i < segs.length - 1 ? GAP : 0);
+      var r = el("rect", s.cls, {x:cx, y:(H-BH)/2, width:w, height:BH});
+      r.appendChild(el("title", null, {}, s.name + " · " + s.label + " 类（" + (s.label/total*100).toFixed(1) + "%）"));
+      g.appendChild(r);
+      g.appendChild(el("text", "seglbl " + s.ink, {x:cx + w/2, y:H/2+4}, s.label));
+      cx += s.w;
+    });
+    svg.appendChild(g);
+    host.appendChild(svg);
+  }
+
+  lineChart();
+  curveTable();
+  barChart("hostA", 149, 17, 42);
+  barChart("hostB", 175, 18, 15);
+})();
+</script>

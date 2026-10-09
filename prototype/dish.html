@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>基于深度学习的智能菜谱识别</title>
+<style>
+      :root {
+        --color-bg: #F5F5F5;
+        --color-surface: #FFFFFF;
+        --color-text: #111111;
+        --color-text-muted: #6B7280;
+        --color-text-faint: #9CA3AF;
+        --color-border: #E5E7EB;
+        --color-border-strong: #111111;
+        --color-primary: #111111;
+        --color-accent-bg: #E8F5E9;
+        --color-accent-text: #2E7D32;
+        --color-warn-bg: #FFF7ED;
+        --color-warn-text: #B45309;
+        --color-muted-bg: #F3F4F6;
+        --color-progress: #2563EB;
+        --color-progress-track: #E5E7EB;
+        --radius-card: 16px;
+        --radius-chip: 10px;
+        --radius-tag: 8px;
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, .04);
+        --font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+
+      body {
+        margin: 0;
+        background: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-family);
+        font-size: 14px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .topbar {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 24px 24px 0;
+      }
+
+      .app-title { margin: 0; font-size: 20px; font-weight: 600; }
+      .app-sub { margin: 4px 0 0; font-size: 13px; color: var(--color-text-muted); }
+
+      .banner {
+        max-width: 1360px;
+        margin: 12px auto 0;
+        padding: 10px 16px;
+        border-radius: 10px;
+        background: var(--color-warn-bg);
+        color: var(--color-warn-text);
+        font-size: 12.5px;
+        line-height: 1.7;
+      }
+
+      .banner code {
+        font-family: ui-monospace, Consolas, monospace;
+        background: rgba(0, 0, 0, .05);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(300px, 1.05fr) minmax(360px, 1.35fr);
+        gap: 16px;
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 16px 24px 24px;
+        height: calc(100vh - 118px);
+        min-height: 620px;
+      }
+
+      .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+      .card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-card);
+        box-shadow: var(--shadow-card);
+        padding: 20px;
+        min-height: 0;
+      }
+
+      .card--grow { display: flex; flex-direction: column; flex: 1; }
+
+      .panel-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .panel-title { margin: 0; font-size: 17px; font-weight: 600; }
+      .badge { font-size: 12px; color: var(--color-text-faint); }
+      .hint { font-size: 12px; color: var(--color-text-faint); white-space: nowrap; }
+
+      /* ---------- 拍照识别 ---------- */
+
+      .dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 210px;
+        padding: 14px;
+        border: 1.5px dashed #D1D5DB;
+        border-radius: 12px;
+        background: #FAFAFA;
+        cursor: pointer;
+        text-align: center;
+        transition: border-color .15s, background .15s;
+      }
+
+      .dropzone:hover, .dropzone:focus-visible {
+        border-color: var(--color-border-strong);
+        background: #F5F5F5;
+        outline: none;
+      }
+
+      .dropzone.is-dragover { border-color: var(--color-progress); background: #EFF6FF; }
+      .dropzone-text { margin: 0; color: var(--color-text-muted); }
+      .dropzone-text strong { color: var(--color-text); font-weight: 600; }
+
+      .preview { max-width: 100%; max-height: 232px; border-radius: 8px; object-fit: contain; }
+
+      .samples { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+
+      .sample {
+        padding: 0;
+        border: 1.5px solid var(--color-border);
+        border-radius: 8px;
+        background: #FFF;
+        overflow: hidden;
+        cursor: pointer;
+        line-height: 0;
+      }
+
+      .sample img { width: 100%; height: 46px; object-fit: cover; display: block; }
+      .sample:hover { border-color: var(--color-text-muted); }
+      .sample.is-active { border-color: var(--color-border-strong); }
+
+      .actions { display: flex; gap: 12px; margin-top: 14px; }
+
+      .btn {
+        flex: 1;
+        padding: 13px 18px;
+        border-radius: var(--radius-chip);
+        border: 1px solid transparent;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: opacity .15s, border-color .15s;
+      }
+
+      .btn--primary { background: var(--color-primary); color: #FFF; }
+      .btn--primary:hover:not(:disabled) { opacity: .85; }
+      .btn--secondary { background: #FFF; color: var(--color-text); border-color: var(--color-border); }
+      .btn--secondary:hover:not(:disabled) { border-color: var(--color-border-strong); }
+      .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+      .caption { margin: 12px 0 0; font-size: 12px; color: var(--color-text-faint); text-align: center; }
+
+      /* ---------- 识别结果 ---------- */
+
+      .candidates { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 0; }
+
+      .cand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 14px;
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-chip);
+        background: #FFF;
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        font-size: 15px;
+        color: var(--color-text-faint);
+        transition: border-color .15s, color .15s;
+      }
+
+      .cand:hover { border-color: var(--color-text-muted); }
+      .cand:focus-visible { outline: 2px solid var(--color-progress); outline-offset: 2px; }
+      .cand.is-selected { border-color: var(--color-border-strong); color: var(--color-text); }
+
+      .cand-name { white-space: nowrap; }
+      .cand-name small { color: var(--color-text-faint); font-size: 12px; margin-left: 6px; }
+
+      .bar { flex: 1; height: 6px; min-width: 30px; border-radius: 999px; background: var(--color-progress-track); overflow: hidden; }
+      .bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--color-progress); }
+      .cand-pct { font-size: 12px; color: var(--color-text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .cand.is-selected .cand-pct { color: var(--color-text-muted); }
+
+      .note {
+        margin: 12px 0 0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: var(--color-warn-bg);
+        color: var(--color-warn-text);
+        font-size: 12.5px;
+        line-height: 1.6;
+      }
+
+      /* ---------- 菜谱 ---------- */
+
+      .recipe-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; margin-right: -6px; }
+      .recipe-name { margin: 0; font-size: 20px; font-weight: 600; }
+      .recipe-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .recipe-meta { margin: 8px 0 0; font-size: 13px; color: var(--color-text-muted); }
+      .recipe-desc { margin: 8px 0 0; font-size: 13.5px; color: var(--color-text-muted); }
+
+      .section-label {
+        margin: 20px 0 10px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .04em;
+        color: var(--color-text-faint);
+      }
+
+      .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      .tag { padding: 4px 11px; border-radius: var(--radius-tag); font-size: 13px; background: var(--color-accent-bg); color: var(--color-accent-text); }
+      .tag--optional { background: var(--color-muted-bg); color: var(--color-text-muted); }
+
+      .steps { margin: 0; padding: 0 0 0 22px; font-size: 14px; }
+      .steps li { padding-left: 2px; }
+      .steps li + li { margin-top: 8px; }
+
+      .video {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 22px;
+        padding: 14px 16px;
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+      }
+
+      .video-text { min-width: 0; }
+      .video-title { margin: 0; font-size: 14px; font-weight: 600; }
+      .video-url { margin: 2px 0 0; font-size: 11.5px; color: var(--color-text-faint); word-break: break-all; }
+
+      .video-btn {
+        flex: none;
+        padding: 9px 16px;
+        border-radius: var(--radius-chip);
+        border: 1px solid var(--color-border-strong);
+        background: #FFF;
+        color: var(--color-text);
+        font-family: inherit;
+        font-size: 13.5px;
+        cursor: pointer;
+      }
+
+      .video-btn:hover { background: var(--color-primary); color: #FFF; }
+
+      .empty { margin: 0; padding: 32px 8px; text-align: center; color: var(--color-text-faint); font-size: 13px; }
+
+      @media (max-width: 1100px) {
+        .app { grid-template-columns: 1fr; height: auto; }
+        .candidates, .recipe-scroll { overflow: visible; }
+      }
+    </style>
+</head>
+<body>
+<header class="topbar">
+  <h1 class="app-title">基于深度学习的智能菜谱识别</h1>
+  <p class="app-sub">上传成品菜照片 → 识别菜品 → 查看菜谱与做法</p>
+</header>
+<div class="banner">演示数据 · 候选与置信度是 <code>models/dish.onnx</code> 的真实输出；类别名取自随模型交付的 <code>models/dish_labels.json</code>（208 类，由 <code>backend/tools/import_labels.py</code> 从 CSV 转换，下标一一对应）。菜谱优先取自库内种子菜谱（<code>backend/app/data/seed_recipes.json</code>）；库外菜在正式前端 <code>frontend/</code> 里由大模型生成做法并写回库内（FR-13），本页是离线快照、跑不了大模型，只能用演示菜谱占位并注明来源。</div>
+<div class="app">
+  <div class="col">
+    <section class="card">
+      <div class="panel-head"><h2 class="panel-title">拍照识别</h2><span class="badge">菜品分类</span></div>
+      <div class="dropzone" id="dropzone" tabindex="0"></div>
+      <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+      <div class="samples" id="samples"></div>
+      <div class="actions">
+        <button class="btn btn--primary" id="btn-run" type="button">开始识别</button>
+        <button class="btn btn--secondary" id="btn-reset" type="button">重置</button>
+      </div>
+      <p class="caption" id="model-caption"></p>
+    </section>
+  </div>
+  <div class="col">
+    <section class="card card--grow">
+      <div class="panel-head"><h2 class="panel-title">识别结果</h2><span class="hint">点击切换候选</span></div>
+      <div class="candidates" id="candidates"></div>
+    </section>
+  </div>
+  <div class="col">
+    <section class="card card--grow">
+      <div class="panel-head"><h2 class="panel-title">菜谱与做法</h2><span class="badge" id="recipe-source"></span></div>
+      <div class="recipe-scroll" id="recipe"></div>
+    </section>
+  </div>
+</div>
+<script id="demo-dishes" type="application/json">
+{
+  "labels": {
+    "0": "麻婆豆腐",
+    "1": "家常豆腐",
+    "2": "煎豆腐",
+    "3": "豆腐花",
+    "4": "臭豆腐",
+    "5": "酸辣土豆丝",
+    "6": "土豆泥",
+    "7": "香煎土豆",
+    "8": "土豆焖豆角",
+    "9": "地三鲜",
+    "10": "薯条",
+    "11": "鱼香茄子",
+    "12": "蒜泥茄子",
+    "13": "肉末茄子",
+    "14": "辣白菜",
+    "15": "醋溜白菜",
+    "16": "上汤娃娃菜",
+    "17": "手撕包菜",
+    "18": "蚝油生菜",
+    "19": "炒青菜",
+    "20": "炒空心菜",
+    "21": "蒜蓉油麦菜",
+    "22": "清炒菠菜",
+    "23": "炒豆芽",
+    "24": "炒蚕豆",
+    "25": "毛豆",
+    "26": "蚝油西兰花",
+    "27": "香煎藕盒",
+    "28": "莲藕",
+    "29": "凉拌西红柿",
+    "30": "鸡鸭胗",
+    "31": "凉拌木耳",
+    "32": "口水黄瓜",
+    "33": "花生米",
+    "34": "凉拌海带丝",
+    "35": "拔丝山药",
+    "36": "清炒山药",
+    "37": "干煸豆角",
+    "38": "蚝油杏鲍菇",
+    "39": "酿苦瓜",
+    "40": "炒苦瓜",
+    "41": "虎皮青椒",
+    "42": "凉拌腐竹",
+    "43": "炒花菜",
+    "44": "松仁玉米",
+    "45": "香菇青菜",
+    "46": "椒盐蘑菇",
+    "47": "芹菜香干",
+    "48": "西芹百合",
+    "49": "韭菜炒香干",
+    "50": "西红柿炒鸡蛋",
+    "51": "韭菜炒鸡蛋",
+    "52": "黄瓜炒鸡蛋",
+    "53": "鸡蛋羹",
+    "54": "猪肝",
+    "55": "猪耳朵",
+    "56": "叉烧",
+    "57": "粉蒸排骨",
+    "58": "糖醋排骨",
+    "59": "海带炖排骨",
+    "60": "可乐鸡翅",
+    "61": "泡椒凤爪",
+    "62": "红烧鸡爪",
+    "63": "口水鸡",
+    "64": "烤鸭烧鹅",
+    "65": "白斩鸡",
+    "66": "大盘鸡",
+    "67": "香菇蒸鸡",
+    "68": "黄焖鸡",
+    "69": "豉油鸡",
+    "70": "辣子鸡",
+    "71": "宫保鸡丁",
+    "72": "三杯鸡",
+    "73": "鸡丝、鸡丝面",
+    "74": "炸鸡腿",
+    "75": "啤酒鸭",
+    "76": "腰花",
+    "77": "红烧肉",
+    "78": "红烧牛肉",
+    "79": "酱牛肉",
+    "80": "西红柿牛腩",
+    "81": "土豆炖牛腩",
+    "82": "杭椒牛柳",
+    "83": "梅菜扣肉",
+    "84": "回锅肉",
+    "85": "猪肉炖粉条",
+    "86": "水煮肉片",
+    "87": "糖醋里脊",
+    "88": "咕噜肉",
+    "89": "锅包肉",
+    "90": "农家小炒肉",
+    "91": "培根金针菇卷",
+    "92": "京酱肉丝",
+    "93": "豆角肉丝",
+    "94": "酱焖猪蹄",
+    "95": "肚丝",
+    "96": "青椒肉丝",
+    "97": "鱼香肉丝",
+    "98": "木耳炒肉丝",
+    "99": "木须肉",
+    "100": "莴笋肉丝",
+    "101": "蚂蚁上树",
+    "102": "孜然羊肉",
+    "103": "羊肉串",
+    "104": "葱爆羊肉",
+    "105": "红烧狮子头",
+    "106": "酸菜鱼",
+    "107": "烤鱼",
+    "108": "糖醋鲤鱼",
+    "109": "松鼠桂鱼",
+    "110": "红烧带鱼",
+    "111": "剁椒鱼头",
+    "112": "水煮鱼",
+    "113": "清蒸鲈鱼",
+    "114": "芝士虾球",
+    "115": "虾仁西兰花",
+    "116": "油焖大虾",
+    "117": "香辣虾",
+    "118": "香辣小龙虾",
+    "119": "水晶虾饺",
+    "120": "蒜茸粉丝蒸虾",
+    "121": "清炒虾仁",
+    "122": "皮皮虾",
+    "123": "扇贝",
+    "124": "生蚝",
+    "125": "鱿鱼",
+    "126": "鲍鱼",
+    "127": "螃蟹",
+    "128": "甲鱼",
+    "129": "鳝鱼",
+    "130": "扬州炒饭",
+    "131": "蛋包饭",
+    "132": "小笼汤包",
+    "133": "烧麦",
+    "134": "家常早餐鸡蛋饼",
+    "135": "土豆鸡蛋饼",
+    "136": "鸡蛋灌饼",
+    "137": "卤蛋",
+    "138": "荷包蛋",
+    "139": "葱花手抓饼",
+    "140": "芝麻烧饼",
+    "141": "肉夹馍",
+    "142": "韭菜盒子",
+    "143": "南瓜紫薯馒头",
+    "144": "馒头",
+    "145": "包子",
+    "146": "南瓜饼",
+    "147": "披萨",
+    "148": "油条",
+    "149": "炸酱面",
+    "150": "重庆酸辣粉",
+    "151": "凉拌凉面",
+    "152": "西红柿鸡蛋面",
+    "153": "肉酱意大利面",
+    "154": "茄汁拌面",
+    "155": "凉皮",
+    "156": "担担面",
+    "157": "臊子面",
+    "158": "炒面",
+    "159": "饺子",
+    "160": "玉米棒",
+    "161": "红烧牛肉面",
+    "162": "河粉",
+    "163": "肠粉",
+    "164": "鲜肉小馄饨",
+    "165": "煎饺",
+    "166": "汤圆",
+    "167": "小米粥",
+    "168": "红薯粥",
+    "169": "海蛰",
+    "170": "皮蛋瘦肉粥",
+    "171": "大米粥",
+    "172": "米饭",
+    "173": "紫菜包饭",
+    "174": "石锅饭",
+    "175": "乌鸡汤",
+    "176": "鲫鱼豆腐汤",
+    "177": "疙瘩汤",
+    "178": "酸辣汤",
+    "179": "萝卜排骨汤",
+    "180": "西红柿鸡蛋汤",
+    "181": "西湖牛肉羹",
+    "182": "莲藕排骨汤",
+    "183": "紫菜蛋花汤",
+    "184": "海带豆腐汤",
+    "185": "玉米排骨汤",
+    "186": "菠菜猪肝汤",
+    "187": "罗宋汤",
+    "188": "银耳汤",
+    "189": "冬瓜汤",
+    "190": "酱汤",
+    "191": "毛血旺",
+    "192": "夫妻肺片",
+    "193": "麻辣香锅",
+    "194": "黄金如意肉卷",
+    "195": "蛋糕",
+    "196": "蛋挞",
+    "197": "面包",
+    "198": "牛角包",
+    "199": "吐司",
+    "200": "饼干",
+    "201": "曲奇饼干",
+    "202": "苏打饼干",
+    "203": "双皮奶",
+    "204": "冰激凌",
+    "205": "鸡蛋布丁",
+    "206": "冰糖雪梨",
+    "207": "水果沙拉"
+  },
+  "model": {
+    "arch": "convnext_base.fb_in22k_ft_in1k",
+    "classes": 208,
+    "input": "288x288",
+    "top1SelfReported": 0.8454,
+    "latencyMs": 139
+  },
+  "photos": [
+    {
+      "id": "braised-pork",
+      "file": "../demo/dishes/dish-braised-pork.jpg",
+      "caption": "红烧肉",
+      "topk": [
+        {
+          "index": 77,
+          "confidence": 0.885
+        },
+        {
+          "index": 83,
+          "confidence": 0.007
+        },
+        {
+          "index": 137,
+          "confidence": 0.005
+        },
+        {
+          "index": 58,
+          "confidence": 0.003
+        },
+        {
+          "index": 85,
+          "confidence": 0.003
+        }
+      ],
+      "classRecipes": {
+        "77": {
+          "name": "红烧肉",
+          "inLibrary": true,
+          "recipeId": 109,
+          "cookTimeMinutes": 120,
+          "difficulty": "困难",
+          "rating": 4.9,
+          "servings": 4,
+          "description": "炒糖色是关键，肥而不腻。",
+          "required": [
+            [
+              "五花肉",
+              "600 克"
+            ],
+            [
+              "冰糖",
+              "20 克"
+            ]
+          ],
+          "optional": [
+            [
+              "生抽",
+              "2 勺"
+            ],
+            [
+              "老抽",
+              "1 勺"
+            ],
+            [
+              "姜",
+              "3 片"
+            ]
+          ],
+          "steps": [
+            "五花肉切块冷水下锅焯透",
+            "干锅炒糖色至枣红",
+            "下肉块裹匀糖色，加生抽老抽",
+            "加热水小火焖 60 分钟，大火收汁"
+          ],
+          "source": "菜谱库 seed_recipes.json #109"
+        },
+        "83": null,
+        "137": null,
+        "58": {
+          "name": "糖醋排骨",
+          "inLibrary": true,
+          "recipeId": 155,
+          "cookTimeMinutes": 45,
+          "difficulty": "中等",
+          "rating": 4.8,
+          "servings": 3,
+          "description": "糖色炒到位，颜色才透亮。",
+          "required": [
+            [
+              "猪排骨",
+              "500 克"
+            ]
+          ],
+          "optional": [
+            [
+              "冰糖",
+              "20 克"
+            ],
+            [
+              "香醋",
+              "3 大勺"
+            ],
+            [
+              "生抽",
+              "2 大勺"
+            ],
+            [
+              "料酒",
+              "1 大勺"
+            ],
+            [
+              "姜",
+              "3 片"
+            ],
+            [
+              "芝麻",
+              "少许"
+            ]
+          ],
+          "steps": [
+            "排骨冷水下锅焯去血沫，捞出沥干",
+            "锅中少油下冰糖，小火炒到琥珀色",
+            "下排骨翻匀上色",
+            "加生抽、香醋、料酒、姜片与热水没过排骨",
+            "小火焖 25 分钟，大火收汁到亮油，撒芝麻"
+          ],
+          "source": "菜谱库 seed_recipes.json #155"
+        },
+        "85": null
+      },
+      "resolved": {
+        "name": "红烧肉",
+        "inLibrary": true,
+        "recipeId": 109,
+        "cookTimeMinutes": 120,
+        "difficulty": "困难",
+        "rating": 4.9,
+        "servings": 4,
+        "description": "炒糖色是关键，肥而不腻。",
+        "required": [
+          [
+            "五花肉",
+            "600 克"
+          ],
+          [
+            "冰糖",
+            "20 克"
+          ]
+        ],
+        "optional": [
+          [
+            "生抽",
+            "2 勺"
+          ],
+          [
+            "老抽",
+            "1 勺"
+          ],
+          [
+            "姜",
+            "3 片"
+          ]
+        ],
+        "steps": [
+          "五花肉切块冷水下锅焯透",
+          "干锅炒糖色至枣红",
+          "下肉块裹匀糖色，加生抽老抽",
+          "加热水小火焖 60 分钟，大火收汁"
+        ],
+        "source": "菜谱库 seed_recipes.json #109"
+      }
+    },
+    {
+      "id": "omurice",
+      "file": "../demo/dishes/dish-omurice.jpg",
+      "caption": "蛋包饭",
+      "topk": [
+        {
+          "index": 131,
+          "confidence": 0.709
+        },
+        {
+          "index": 162,
+          "confidence": 0.081
+        },
+        {
+          "index": 158,
+          "confidence": 0.058
+        },
+        {
+          "index": 73,
+          "confidence": 0.004
+        },
+        {
+          "index": 130,
+          "confidence": 0.004
+        }
+      ],
+      "classRecipes": {
+        "131": null,
+        "162": null,
+        "158": null,
+        "73": null,
+        "130": {
+          "name": "扬州炒饭",
+          "inLibrary": true,
+          "recipeId": 158,
+          "cookTimeMinutes": 20,
+          "difficulty": "简单",
+          "rating": 4.5,
+          "servings": 2,
+          "description": "隔夜饭炒出来才粒粒分明。",
+          "required": [
+            [
+              "米饭",
+              "2 碗"
+            ],
+            [
+              "鸡蛋",
+              "2 个"
+            ],
+            [
+              "虾",
+              "100 克"
+            ]
+          ],
+          "optional": [
+            [
+              "胡萝卜",
+              "半根"
+            ],
+            [
+              "玉米",
+              "半碗"
+            ],
+            [
+              "葱",
+              "1 根"
+            ],
+            [
+              "盐",
+              "少许"
+            ],
+            [
+              "食用油",
+              "适量"
+            ]
+          ],
+          "steps": [
+            "隔夜米饭提前打散",
+            "虾去线切丁，胡萝卜切小丁",
+            "热油炒散蛋液盛出",
+            "底油炒香虾仁、胡萝卜与玉米",
+            "下米饭中火压散炒到粒粒分明，回鸡蛋加盐与葱花"
+          ],
+          "source": "菜谱库 seed_recipes.json #158"
+        }
+      },
+      "resolved": {
+        "name": "蛋包饭",
+        "inLibrary": false,
+        "recipeId": null,
+        "cookTimeMinutes": 25,
+        "difficulty": "中等",
+        "rating": 4.6,
+        "servings": 1,
+        "description": "蛋皮要摊得薄，炒饭先放凉更好炒散。",
+        "required": [
+          [
+            "鸡蛋",
+            "3 个"
+          ],
+          [
+            "米饭",
+            "1 碗"
+          ],
+          [
+            "卷心菜",
+            "100 克"
+          ]
+        ],
+        "optional": [
+          [
+            "胡萝卜",
+            "半根"
+          ],
+          [
+            "番茄酱",
+            "2 勺"
+          ],
+          [
+            "盐",
+            "适量"
+          ]
+        ],
+        "steps": [
+          "卷心菜与胡萝卜切丝，热油炒软",
+          "下米饭炒散，加盐调味后盛出",
+          "鸡蛋打散摊成蛋皮，边缘凝固即可",
+          "蛋皮盖在炒饭上，淋番茄酱"
+        ],
+        "source": "菜谱库暂缺，演示菜谱（正式前端由 FR-13 生成后入库）"
+      }
+    },
+    {
+      "id": "shrimp-greens",
+      "file": "../demo/dishes/dish-shrimp-greens.jpg",
+      "caption": "虾仁炒青笋",
+      "topk": [
+        {
+          "index": 100,
+          "confidence": 0.643
+        },
+        {
+          "index": 121,
+          "confidence": 0.074
+        },
+        {
+          "index": 114,
+          "confidence": 0.059
+        },
+        {
+          "index": 48,
+          "confidence": 0.034
+        },
+        {
+          "index": 117,
+          "confidence": 0.026
+        }
+      ],
+      "classRecipes": {
+        "100": null,
+        "121": null,
+        "114": null,
+        "48": null,
+        "117": null
+      },
+      "resolved": {
+        "name": "莴笋肉丝",
+        "inLibrary": false,
+        "recipeId": null,
+        "cookTimeMinutes": 15,
+        "difficulty": "简单",
+        "rating": 4.7,
+        "servings": 2,
+        "description": "肉丝上浆才不柴，莴笋最后大火快炒保持脆感。",
+        "required": [
+          [
+            "莴笋",
+            "1 根"
+          ],
+          [
+            "猪里脊",
+            "150 克"
+          ]
+        ],
+        "optional": [
+          [
+            "蒜",
+            "2 瓣"
+          ],
+          [
+            "淀粉",
+            "1 勺"
+          ],
+          [
+            "盐",
+            "适量"
+          ]
+        ],
+        "steps": [
+          "里脊切细丝，加淀粉与少许清水抓匀腌 10 分钟",
+          "莴笋切丝，沸水焯 20 秒捞出过凉",
+          "热油下肉丝滑散至变色",
+          "下莴笋与蒜末大火快炒，加盐调味"
+        ],
+        "source": "菜谱库暂缺，演示菜谱（正式前端由 FR-13 生成后入库）"
+      }
+    },
+    {
+      "id": "noodle-potato",
+      "file": "../demo/dishes/dish-noodle-potato.jpg",
+      "caption": "土豆肉末拌面",
+      "topk": [
+        {
+          "index": 156,
+          "confidence": 0.459
+        },
+        {
+          "index": 157,
+          "confidence": 0.192
+        },
+        {
+          "index": 149,
+          "confidence": 0.123
+        },
+        {
+          "index": 151,
+          "confidence": 0.025
+        },
+        {
+          "index": 153,
+          "confidence": 0.014
+        }
+      ],
+      "classRecipes": {
+        "156": null,
+        "157": null,
+        "149": {
+          "name": "炸酱面",
+          "inLibrary": true,
+          "recipeId": 168,
+          "cookTimeMinutes": 30,
+          "difficulty": "简单",
+          "rating": 4.6,
+          "servings": 2,
+          "description": "酱要炸到油亮才香。",
+          "required": [
+            [
+              "面条",
+              "200 克"
+            ],
+            [
+              "猪肉末",
+              "150 克"
+            ]
+          ],
+          "optional": [
+            [
+              "豆瓣酱",
+              "2 大勺"
+            ],
+            [
+              "葱",
+              "1 根"
+            ],
+            [
+              "姜",
+              "1 小块"
+            ],
+            [
+              "黄瓜",
+              "1 根"
+            ],
+            [
+              "豆芽",
+              "1 小把"
+            ],
+            [
+              "食用油",
+              "适量"
+            ]
+          ],
+          "steps": [
+            "热油下肉末炒到吐油",
+            "加葱姜末炒香",
+            "下豆瓣酱与半碗水，中火炸 10 分钟到酱色油亮",
+            "另锅煮面，捞出过凉水",
+            "黄瓜切丝、豆芽焯熟做面码，浇上炸酱拌匀"
+          ],
+          "source": "菜谱库 seed_recipes.json #168"
+        },
+        "151": null,
+        "153": null
+      },
+      "resolved": {
+        "name": "担担面",
+        "inLibrary": false,
+        "recipeId": null,
+        "cookTimeMinutes": 25,
+        "difficulty": "简单",
+        "rating": 4.5,
+        "servings": 2,
+        "description": "臊子要炒得干香，拌面时再补一勺红油。",
+        "required": [
+          [
+            "面条",
+            "200 克"
+          ],
+          [
+            "猪肉末",
+            "100 克"
+          ],
+          [
+            "芽菜",
+            "30 克"
+          ]
+        ],
+        "optional": [
+          [
+            "花生碎",
+            "2 勺"
+          ],
+          [
+            "辣椒油",
+            "2 勺"
+          ],
+          [
+            "葱花",
+            "适量"
+          ]
+        ],
+        "steps": [
+          "肉末下锅炒散，加芽菜与生抽炒成干香臊子",
+          "碗底调芝麻酱、辣椒油、生抽，兑一勺面汤",
+          "面条煮熟捞入碗中",
+          "铺上臊子，撒花生碎与葱花拌匀"
+        ],
+        "source": "菜谱库暂缺，演示菜谱（正式前端由 FR-13 生成后入库）"
+      },
+      "note": "前三名 担担面（#156） / 臊子面（#157） / 炸酱面（#149） 的置信度咬得很紧（46% · 19% · 12%）。三个类别都属于面条类，属于近义类别互相混淆，不是认成了不相干的菜。"
+    }
+  ]
+}
+</script>
+<script>
+    (function () {
+      "use strict";
+
+      var DATA = JSON.parse(document.getElementById("demo-dishes").textContent);
+      var VIDEO_TEMPLATE = "https://search.bilibili.com/all?keyword=";
+
+      var state = { photo: null, candidate: null, customFile: false, busy: false };
+
+      var elDropzone = document.getElementById("dropzone");
+      var elFile = document.getElementById("file-input");
+      var elSamples = document.getElementById("samples");
+      var elCandidates = document.getElementById("candidates");
+      var elRecipe = document.getElementById("recipe");
+      var elCaption = document.getElementById("model-caption");
+      var elRecipeSource = document.getElementById("recipe-source");
+      var btnRun = document.getElementById("btn-run");
+      var btnReset = document.getElementById("btn-reset");
+
+      elCaption.textContent = "模型: " + DATA.model.arch + " · " + DATA.model.classes + " 类 · 输入 " +
+        DATA.model.input + " · 单张约 " + DATA.model.latencyMs + " ms";
+
+      function escapeHtml(text) {
+        return String(text).replace(/[&<>"']/g, function (ch) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+        });
+      }
+
+      function videoUrl(name) {
+        return VIDEO_TEMPLATE + encodeURIComponent(name + " 做法");
+      }
+
+      function labelOf(index) {
+        return DATA.labels[String(index)] || ("类别 #" + index);
+      }
+
+      function renderSamples() {
+        elSamples.innerHTML = DATA.photos.map(function (photo) {
+          return '<button class="sample' + (state.photo === photo.id ? " is-active" : "") +
+            '" data-photo="' + photo.id + '" type="button" title="' + escapeHtml(photo.caption) + '">' +
+            '<img src="' + photo.file + '" alt="' + escapeHtml(photo.caption) + '"></button>';
+        }).join("");
+      }
+
+      function currentPhoto() {
+        return DATA.photos.filter(function (item) { return item.id === state.photo; })[0] || null;
+      }
+
+      function renderPreview() {
+        var photo = currentPhoto();
+        if (!photo) {
+          elDropzone.innerHTML = '<p class="dropzone-text"><strong>点击选择</strong> 或拖拽成品菜照片</p>' +
+            '<span class="badge">jpg / png / webp · ≤ 5 MB</span>';
+          return;
+        }
+        elDropzone.innerHTML = '<img class="preview" src="' + photo.file + '" alt="' +
+          escapeHtml(photo.caption) + '">' +
+          '<span class="badge">已选择示例图 · ' + escapeHtml(photo.caption) + "</span>";
+      }
+
+      function renderCandidates() {
+        var photo = currentPhoto();
+        if (!photo) {
+          elCandidates.innerHTML = '<p class="empty">识别后这里显示候选菜品与置信度</p>';
+          return;
+        }
+        elCandidates.innerHTML = photo.topk.map(function (hit, rank) {
+          var selected = state.candidate === hit.index;
+          return '<button class="cand' + (selected ? " is-selected" : "") + '" data-index="' + hit.index +
+            '" type="button"><span class="cand-name">' + escapeHtml(labelOf(hit.index)) +
+            "<small>#" + hit.index + "</small></span>" +
+            '<span class="bar"><span class="bar-fill" style="width:' + (hit.confidence * 100).toFixed(1) + '%"></span></span>' +
+            '<span class="cand-pct">' + (hit.confidence * 100).toFixed(1) + "%</span></button>";
+        }).join("") +
+          (photo.note ? '<p class="note">' + escapeHtml(photo.note) + "</p>" : "");
+      }
+
+      function renderRecipe() {
+        var photo = currentPhoto();
+        if (!photo || state.candidate === null) {
+          elRecipeSource.textContent = "";
+          elRecipe.innerHTML = '<p class="empty">识别出菜品后，这里显示菜谱与做法</p>';
+          return;
+        }
+        var index = state.candidate;
+        var r = photo.classRecipes[String(index)] || photo.resolved;
+        if (!photo.classRecipes[String(index)] && index !== photo.topk[0].index) {
+          elRecipeSource.textContent = "库外菜";
+          elRecipe.innerHTML = '<p class="empty">' + escapeHtml(labelOf(index)) + "（类别 #" + index +
+            "）暂无菜谱数据<br>这一类还没补进菜谱库，正式前端会由 FR-13 调用大模型生成做法并入库</p>";
+          return;
+        }
+        elRecipeSource.textContent = r.source;
+
+        var required = r.required.map(function (pair) {
+          return '<span class="tag">' + escapeHtml(pair[0]) + " · " + escapeHtml(pair[1]) + "</span>";
+        }).join("");
+        var optional = r.optional.map(function (pair) {
+          return '<span class="tag tag--optional">' + escapeHtml(pair[0]) + " · " + escapeHtml(pair[1]) + "</span>";
+        }).join("");
+        var steps = r.steps.map(function (text) {
+          return "<li>" + escapeHtml(text) + "</li>";
+        }).join("");
+        var url = videoUrl(r.name);
+        var displayUrl = VIDEO_TEMPLATE + r.name + " 做法";
+
+        elRecipe.innerHTML =
+          '<div class="recipe-head"><h3 class="recipe-name">' + escapeHtml(r.name) + "</h3></div>" +
+          '<p class="recipe-meta">' + r.cookTimeMinutes + " 分钟 · 难度 " + escapeHtml(r.difficulty) +
+          " · ★ " + r.rating + " · " + r.servings + " 人份</p>" +
+          '<p class="recipe-desc">' + escapeHtml(r.description) + "</p>" +
+          '<p class="section-label">主料</p><div class="tags">' + required + "</div>" +
+          '<p class="section-label">辅料</p><div class="tags">' + optional + "</div>" +
+          '<p class="section-label">做法</p><ol class="steps">' + steps + "</ol>" +
+          '<div class="video"><div class="video-text"><p class="video-title">视频教程 · ' +
+          escapeHtml(r.name) + " 做法</p>" +
+          '<p class="video-url">' + escapeHtml(displayUrl) + "</p></div>" +
+          '<button class="video-btn" id="btn-video" type="button">打开视频</button></div>';
+
+        document.getElementById("btn-video").addEventListener("click", function () {
+          window.open(url, "_blank", "noopener");
+        });
+      }
+
+      function renderAll() {
+        renderSamples();
+        renderPreview();
+        renderCandidates();
+        renderRecipe();
+        btnRun.disabled = state.busy || !state.photo;
+        btnReset.disabled = !state.photo;
+      }
+
+      function selectPhoto(id) {
+        state.photo = id;
+        state.candidate = null;
+        state.customFile = false;
+        renderAll();
+      }
+
+      function runRecognition() {
+        if (!state.photo || state.busy) return;
+        if (state.customFile) {
+          state.candidate = null;
+          renderAll();
+          elCandidates.innerHTML =
+            '<p class="empty">识别需要后端模型服务<br>演示环境只内置了下方 4 张示例图</p>';
+          return;
+        }
+        state.busy = true;
+        btnRun.textContent = "识别中…";
+        renderAll();
+        window.setTimeout(function () {
+          state.busy = false;
+          state.candidate = currentPhoto().topk[0].index;
+          btnRun.textContent = "开始识别";
+          renderAll();
+        }, 420);
+      }
+
+      function reset() {
+        state.photo = null;
+        state.candidate = null;
+        state.customFile = false;
+        renderAll();
+      }
+
+      elSamples.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-photo]");
+        if (button) selectPhoto(button.dataset.photo);
+      });
+
+      elCandidates.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-index]");
+        if (!button) return;
+        state.candidate = Number(button.dataset.index);
+        renderAll();
+      });
+
+      elDropzone.addEventListener("click", function () { elFile.click(); });
+      elFile.addEventListener("change", function () {
+        var file = elFile.files && elFile.files[0];
+        if (!file) return;
+        state.customFile = true;
+        state.photo = null;
+        state.candidate = null;
+        var reader = new FileReader();
+        reader.onload = function () {
+          elDropzone.innerHTML = '<img class="preview" src="' + reader.result +
+            '" alt="已选择图片"><span class="badge">已选择本地图片 · ' + escapeHtml(file.name) + "</span>";
+          renderSamples();
+          renderCandidates();
+          renderRecipe();
+          btnRun.disabled = false;
+          btnReset.disabled = false;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      ["dragenter", "dragover"].forEach(function (type) {
+        elDropzone.addEventListener(type, function (event) {
+          event.preventDefault();
+          elDropzone.classList.add("is-dragover");
+        });
+      });
+      ["dragleave", "drop"].forEach(function (type) {
+        elDropzone.addEventListener(type, function (event) {
+          event.preventDefault();
+          elDropzone.classList.remove("is-dragover");
+        });
+      });
+
+      btnRun.addEventListener("click", runRecognition);
+      btnReset.addEventListener("click", reset);
+
+      renderAll();
+    })();
+    </script>
+</body>
+</html>

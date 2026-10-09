@@ -1,0 +1,20 @@
+# 后端运行依赖（Python 3.9+）
+# 安装： .venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+# 版本为本项目实测通过的组合；onnxruntime / pillow / numpy / pydantic 由基础环境提供
+fastapi==0.128.8
+uvicorn==0.39.0
+sqlalchemy==2.0.52
+pydantic==2.13.4
+python-multipart==0.0.20
+
+# 测试
+pytest==8.4.2
+pytest-cov==7.1.0
+httpx==0.28.1
+
+# 模型接入（训练产出的 ONNX 就位后启用，缺失时自动降级为模拟识别）
+# 按本机实测通过的版本钉住：容器里装到别的版本会让推理结果和本机对不上，
+# 排查「容器里识别不出来、本机正常」这类问题时白白多一层变量。
+onnxruntime==1.19.2
+pillow==11.3.0
+numpy==1.26.4

@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+.coverage
+.coverage.*
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node / 前端构建产物
+node_modules/
+dist/
+.vite/
+coverage/
+
+# 本地数据库
+*.db
+*.sqlite3
+
+# 数据集与模型权重（体积大，走 Release / 网盘分发）
+ml/data/
+ml/models/
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.zip
+
+# 环境变量
+.env
+.env.local
+
+# 菜谱草案（中间产物：审校后合进 seed 数据，本身不留版本）
+drafts/
+
+# 编辑器与系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 编辑器本地状态
+.obsidian/
+
+# 本机构建与渲染中间件
+.codex-build/
+
+# Office 打开文档时留下的临时锁文件
+~$*
+
+# 本地空白模板（含 23 MB 内置素材）：只在本地用，不入版本库
+templates/
+
+# 录制视频与打包材料：留在本地，仓库对外只给代码与文档
+docs/*.mp4
+docs/*.rar
+
+# 个人简历（含手机号、邮箱与证件照）：只在本地投递用，不进公开仓库
+简历-*.docx
+简历-*.pdf
