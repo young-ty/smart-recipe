@@ -8,13 +8,33 @@
 菜谱库命中直接给，库外由大模型生成后落库，下次同一道菜直接命中；存下来的菜随时翻出来就能照着做。
 
 识别模型为 **208 类菜品分类（timm `convnext_base.fb_in22k_ft_in1k`，288 × 288 输入）**，训练代码与前后端同在仓库里，
-覆盖**前端 + 后端 + 模型接入层 + 菜谱内容**。详细设计见 `docs/项目设计方案.md`（v2.30）。
+覆盖**前端 + 后端 + 模型接入层 + 菜谱内容**。详细设计见 `docs/项目设计方案.md`（v2.33）。
 
 **在线演示**：<https://young-ty.github.io/smart-recipe/>。这是纯前端静态版，打开就能点示例图走完
 「选图 → 候选 → 菜谱与做法 → 存进记忆」整条链路，手机上打开更像一个 App（可加到主屏）。
 它没有后端：页面上的候选与置信度是 `models/dish.onnx` 的真实输出，菜谱是同一条链路真实返回后
 固化的快照（库外那些由大模型生成后落库），全部固定文件、现场不跑模型也不联网。
 发布方式见本文末「静态演示站」一节。
+
+## 界面预览
+
+<table>
+<tr>
+<td width="50%"><img src="docs/images/ui-desktop-recipe.jpg" alt="桌面端识别结果与菜谱"><br>
+<sub>桌面端三栏：左边选图，中间给 top-5 候选（红烧肉 <code>#77</code>，88.5%），右边直接是配比与做法 —— 这一张走的是库内命中</sub></td>
+<td width="50%"><img src="docs/images/ui-desktop-generated.jpg" alt="库外菜由大模型生成"><br>
+<sub>库里没有的菜：拌面照被判成担担面（<code>#156</code>，置信度只有 45.9%，前三名咬得很紧），菜谱由大模型现场生成并写回库里，来源因此标着「生成后自动入库」</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/images/ui-mobile-top.jpg" alt="手机端拍照识别"><br>
+<sub>手机端：同一套前端在窄屏退化成单栏，拍照识别与候选顺着排下来，可「添加到主屏」当 App 用</sub></td>
+<td width="50%"><img src="docs/images/ui-mobile-recipe.jpg" alt="手机端菜谱与做法"><br>
+<sub>手机端菜谱与做法：主辅料带用量，步骤拆到可执行粒度，库外菜同样标出来源</sub></td>
+</tr>
+</table>
+
+> 四张截图都是本机跑真实模型拍的（`models/dish.onnx` + 本地后端），不是设计稿。
+> 右栏底部的「菜谱记忆」把做过的菜存在本机，下次识别到同一道菜直接复用，不再请求大模型。
 
 > **方向说明**：识别对象在 v2.0 由「生食材」调整为「成品菜」。
 > 旧方向的产物（`prototype/index.html`、`backend/app/data/ingredient_mapping.json`）保留在仓库里作为历史留档，

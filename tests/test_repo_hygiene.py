@@ -15,6 +15,7 @@
 运行：python -m unittest tests.test_repo_hygiene -v
 """
 
+import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -191,6 +192,19 @@ class RepoHygieneTest(unittest.TestCase):
         self.assertIn("Copyright (c)", text, "LICENSE 缺少版权行")
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         self.assertIn("LICENSE", readme, "README 没有指向许可文件")
+
+    def test_readme_preview_images_exist(self):
+        """README 界面预览里的图必须真在仓库里，否则别人看到的是四张破图。"""
+
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        sources = re.findall(r'src="([^"]+)"', readme)
+        self.assertTrue(sources, "README 的界面预览表里没有任何图片引用")
+        local = [s for s in sources if not s.startswith(("http://", "https://"))]
+        self.assertTrue(local, "界面预览应该用仓库内的截图，而不是外链")
+        for source in local:
+            self.assertTrue(
+                (REPO_ROOT / source).is_file(), "README 引用的图片不存在：%s" % source
+            )
 
     def test_tracked_files_carry_no_private_or_course_traces(self):
         """对外口径是个人项目：他人姓名、学号、组别编号与校内过程痕迹都不得出现在被跟踪的文件里。"""
