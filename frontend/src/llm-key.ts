@@ -1,15 +1,16 @@
-// 用户自己的大模型 Key（FR-16）：只落在本机浏览器里。
+// 用户自己的大模型 Key（FR-16）：未登录时只落在本机浏览器里。
 //
-// 服务端不落库、不缓存、不写日志——Key 随每次请求的头带过去，用完即弃（设计方案 7.8）。
-// 请求头里的凭据优先于服务端 `.env` 里那份：填了就用用户自己的额度，没填就回落。
+// 服务端不预置任何 Key：未登录时这份随每次请求的头带过去、用完即弃；登录后由
+// useLlmKey 迁进账号（服务端加密落库、只回掩码），请求头里就不再带它（设计方案 7.8）。
+// 两处都有时请求头优先，方便临时换一把 Key 试试。
 
 import { defaultStorage, readStoredJson, removeStored, writeStoredJson } from './storage'
 
 export type LlmKeySettings = {
   apiKey: string
-  /** 兼容 OpenAI 协议的服务地址；留空表示用服务端配的那个 */
+  /** 兼容 OpenAI 协议的服务地址；留空表示用服务端配的默认值 */
   baseUrl: string
-  /** 模型名；留空表示用服务端配的那个 */
+  /** 模型名；留空表示用服务端配的默认值 */
   model: string
 }
 

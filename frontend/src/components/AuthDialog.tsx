@@ -103,6 +103,12 @@ export function AuthDialog({ open, available, onClose, onSubmit }: Props) {
         <h2 className="modal-title" id="auth-dialog-title">
           {TITLE[mode]}
         </h2>
+        {available && (
+          <p className="modal-note">
+            账号用来存两样东西：做过的菜谱（换设备也还在），以及你自己的模型 Key
+            （加密后落库，界面上只显示掩码）。不登录也能用，只是记忆只留在这一台设备上。
+          </p>
+        )}
         {!available && (
           <p className="modal-notice">
             静态演示站不带后端服务，登录与同步在这里用不了；在本地跑完整版就能用。

@@ -5,6 +5,8 @@
 - v2 → v3：`recipes` 主表要动结构（rating 放开 NOT NULL、新增 origin），只能重建表；
   重建期间必须关掉外键校验，否则 ON DELETE CASCADE 会把 recipe_ingredients 与
   recipe_steps 一起清空——菜谱会变成空壳，这里专门有用例守这条。
+- v4 → v5：`users` 加四列放账号级模型 Key。这是纯加列，主数据不能重建，
+  已有账号与口令哈希必须原样留着。
 """
 
 from __future__ import annotations
@@ -54,6 +56,41 @@ CREATE TABLE recipes (
 
 def _url(path: Path) -> str:
     return f"sqlite+pysqlite:///{path.as_posix()}"
+
+
+# v4 的 users 结构：还没有放账号级模型 Key 的四列
+_V4_USERS_TABLE = """
+CREATE TABLE users (
+    id INTEGER NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password_hash TEXT NOT NULL,
+    display_name VARCHAR(32) NOT NULL,
+    created_at DATETIME NOT NULL,
+    last_login_at DATETIME,
+    PRIMARY KEY (id),
+    UNIQUE (email)
+)
+"""
+
+
+def _make_v4_database(path: Path) -> None:
+    """造一个 v4 的库：账号已经在里面，只是还没有存模型 Key 的地方。"""
+
+    engine = create_engine(_url(path), future=True)
+    Base.metadata.create_all(bind=engine)
+    with engine.begin() as connection:
+        connection.execute(text("DROP TABLE users"))
+        connection.execute(text(_V4_USERS_TABLE))
+        connection.execute(text("CREATE INDEX ix_users_created_at ON users (created_at)"))
+        connection.execute(
+            text(
+                "INSERT INTO users (id, email, password_hash, display_name, created_at) "
+                "VALUES (1, 'cook@example.com', 'pbkdf2_sha256$1$c2FsdA==$AAAA', '老账号', "
+                "        '2026-01-01 00:00:00')"
+            )
+        )
+        connection.execute(text("PRAGMA user_version = 4"))
+    engine.dispose()
 
 
 def _make_v1_database(path: Path) -> None:
@@ -181,6 +218,17 @@ def v1_database(tmp_path: Path):
 def v2_database(tmp_path: Path):
     db_path = tmp_path / "v2.db"
     _make_v2_database(db_path)
+    engine = create_engine(_url(db_path), future=True)
+    try:
+        yield engine, db_path
+    finally:
+        engine.dispose()
+
+
+@pytest.fixture()
+def v4_database(tmp_path: Path):
+    db_path = tmp_path / "v4.db"
+    _make_v4_database(db_path)
     engine = create_engine(_url(db_path), future=True)
     try:
         yield engine, db_path
@@ -352,4 +400,59 @@ def test_migrate_schema_from_v2_runs_only_once(v2_database):
     engine, db_path = v2_database
     assert migrate_schema(engine) is True
     assert _user_version(db_path) == SCHEMA_VERSION
+    assert migrate_schema(engine) is False, "已经是当前版本就不该再动库"
+
+
+# --------------------------------- v4 → v5（账号级模型 Key 的存放位置）
+
+def test_sample_database_really_is_v4(v4_database):
+    _engine, db_path = v4_database
+    assert _user_version(db_path) == 4
+    assert "llm_api_key_enc" not in _columns(db_path, "users")
+
+
+def test_migration_from_v4_adds_the_model_key_columns(v4_database):
+    engine, db_path = v4_database
+    create_all(engine)
+
+    assert _user_version(db_path) == SCHEMA_VERSION
+    columns = _columns(db_path, "users")
+    for name in ("llm_api_key_enc", "llm_base_url", "llm_model", "llm_key_updated_at"):
+        assert name in columns, "缺少账号级模型 Key 的列：%s" % name
+
+
+def test_migration_from_v4_keeps_the_existing_account(v4_database):
+    """加列不能动主数据：口令哈希与显示名要原样留着，否则老账号全部登不上。"""
+
+    engine, db_path = v4_database
+    create_all(engine)
+
+    assert _scalar(db_path, "SELECT COUNT(*) FROM users") == 1
+    assert _scalar(db_path, "SELECT display_name FROM users WHERE id = 1") == "老账号"
+    assert (
+        _scalar(db_path, "SELECT password_hash FROM users WHERE id = 1")
+        == "pbkdf2_sha256$1$c2FsdA==$AAAA"
+    )
+    assert _scalar(db_path, "SELECT llm_api_key_enc FROM users WHERE id = 1") is None
+
+
+def test_migrated_users_table_matches_a_freshly_created_one(v4_database, tmp_path: Path):
+    """迁移出来的表必须与 ORM 新建的一模一样，否则两条升级路径会悄悄分叉。"""
+
+    engine, db_path = v4_database
+    create_all(engine)
+    fresh_path = tmp_path / "fresh-v5.db"
+    fresh_engine = create_engine(_url(fresh_path), future=True)
+    try:
+        create_all(fresh_engine)
+    finally:
+        fresh_engine.dispose()
+
+    assert _table_shape(db_path, "users") == _table_shape(fresh_path, "users")
+    assert _index_names(db_path, "users") == _index_names(fresh_path, "users")
+
+
+def test_migrate_schema_from_v4_runs_only_once(v4_database):
+    engine, db_path = v4_database
+    assert migrate_schema(engine) is True
     assert migrate_schema(engine) is False, "已经是当前版本就不该再动库"

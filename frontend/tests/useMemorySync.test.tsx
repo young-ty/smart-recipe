@@ -9,7 +9,7 @@ vi.mock('../src/api/client', async (importOriginal) => {
 import { fetchMemories, putMemories } from '../src/api/client'
 import { useMemorySync } from '../src/hooks/useMemorySync'
 import { useRecipeMemory } from '../src/hooks/useRecipeMemory'
-import { MEMORY_STORAGE_KEY, readMemory } from '../src/memory'
+import { ANON_MEMORY_SCOPE, MEMORY_STORAGE_KEY, readMemory } from '../src/memory'
 import type { AccountUser } from '../src/types'
 import { memoryEntry } from './fixtures'
 
@@ -21,7 +21,8 @@ const USER: AccountUser = {
 }
 
 function useHarness(user: AccountUser | null) {
-  const memory = useRecipeMemory()
+  // 与页面同一条口径：记忆区块跟着登录态走
+  const memory = useRecipeMemory(user === null ? ANON_MEMORY_SCOPE : String(user.id))
   const state = useMemorySync(user, memory)
   return { memory, state }
 }
@@ -106,6 +107,38 @@ describe('useMemorySync 登录后合并', () => {
 })
 
 describe('useMemorySync 失败与退出', () => {
+  it('登录前记在这台设备上的菜会一起带进账号', async () => {
+    localStorage.setItem(
+      MEMORY_STORAGE_KEY,
+      JSON.stringify([memoryEntry({ dish: '没登录时做的菜', at: 5 })]),
+    )
+    const { result, rerender } = renderSync(null)
+
+    rerender({ user: USER })
+
+    expect(result.current.memory.entries.map((entry) => entry.dish)).toContain('没登录时做的菜')
+    await waitFor(() => expect(result.current.state).toBe('synced'))
+    expect(vi.mocked(putMemories).mock.calls[0][0].map((entry) => entry.dish)).toContain(
+      '没登录时做的菜',
+    )
+  })
+
+  it('换一个账号看到的是那个账号自己的记忆', async () => {
+    const other: AccountUser = { ...USER, id: 8, email: 'other@example.com' }
+    vi.mocked(fetchMemories).mockResolvedValue({
+      entries: [memoryEntry({ dish: '账号八的菜', at: 3 })],
+    })
+    const { result, rerender } = renderSync(null)
+    rerender({ user: USER })
+    await waitFor(() => expect(result.current.state).toBe('synced'))
+
+    rerender({ user: other })
+
+    await waitFor(() =>
+      expect(result.current.memory.entries.map((entry) => entry.dish)).toEqual(['账号八的菜']),
+    )
+  })
+
   it('拉取失败时状态是 failed，本机记忆原样保留', async () => {
     localStorage.setItem(
       MEMORY_STORAGE_KEY,

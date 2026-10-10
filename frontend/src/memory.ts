@@ -1,8 +1,10 @@
 // 菜谱记忆（FR-15）：做过的菜留在本机，下次识别到同一道菜就直接复用、不再请求后端。
 //
-// 默认只落 localStorage，不入库、不上传照片。登录之后可以另存一份到账号上（FR-16），
-// 合并去重放在前端：只有前端同时握着本机与服务端两份数据。任何读写失败（无痕模式、
-// 配额满）都降级为空，记忆功能坏掉不能影响识别与取菜谱的主链路。
+// 只落 localStorage，不入库、不上传照片。本机这份**按账号分区**：未登录用匿名区，
+// 登录后换到该账号自己的区块，退出再换回匿名区——所以登录前后看到的记忆就是两份
+// 不同的东西，与账号里同步的那份（FR-16）也对得上。合并去重放在前端：
+// 只有前端同时握着本机与服务端两份数据。任何读写失败（无痕模式、配额满）都降级为空，
+// 记忆功能坏掉不能影响识别与取菜谱的主链路。
 
 import { defaultStorage, readStoredJson, writeStoredJson } from './storage'
 import type { RecipeOut, RecipeSource } from './types'
@@ -22,6 +24,19 @@ export type MemoryEntry = {
 
 export const MEMORY_LIMIT = 12
 export const MEMORY_STORAGE_KEY = 'recipe-memory.v1'
+/** 未登录时的区块名。旧版本只存过这一份，迁移过来正好接着用。 */
+export const ANON_MEMORY_SCOPE = 'anon'
+
+/**
+ * 某个区块的存储键：匿名区沿用老键，账号区各自加一段后缀。
+ *
+ * 用账号 id 而不是邮箱：邮箱能改，也可能含 @ 之类的字符，拿来做键要额外转义。
+ */
+export function memoryStorageKey(scope: string): string {
+  return scope === ANON_MEMORY_SCOPE
+    ? MEMORY_STORAGE_KEY
+    : `${MEMORY_STORAGE_KEY}.user.${scope}`
+}
 
 function isMemoryEntry(value: unknown): value is MemoryEntry {
   if (typeof value !== 'object' || value === null) {
@@ -41,8 +56,11 @@ function isMemoryEntry(value: unknown): value is MemoryEntry {
 }
 
 /** 读记忆：解析失败、结构不对、被改坏的条目一律丢掉，只保留能用的 */
-export function readMemory(target: Storage | null = defaultStorage()): MemoryEntry[] {
-  const raw = readStoredJson(MEMORY_STORAGE_KEY, target)
+export function readMemory(
+  target: Storage | null = defaultStorage(),
+  scope: string = ANON_MEMORY_SCOPE,
+): MemoryEntry[] {
+  const raw = readStoredJson(memoryStorageKey(scope), target)
   if (!Array.isArray(raw)) {
     return []
   }
@@ -60,8 +78,9 @@ export function readMemory(target: Storage | null = defaultStorage()): MemoryEnt
 export function writeMemory(
   entries: MemoryEntry[],
   target: Storage | null = defaultStorage(),
+  scope: string = ANON_MEMORY_SCOPE,
 ): void {
-  writeStoredJson(MEMORY_STORAGE_KEY, entries, target)
+  writeStoredJson(memoryStorageKey(scope), entries, target)
 }
 
 /**

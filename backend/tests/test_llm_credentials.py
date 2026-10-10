@@ -1,7 +1,7 @@
 """用户自带大模型 Key 的契约（设计方案 7.8）。
 
 覆盖两件事：请求头怎么解析与校验（只认 https 或本机 http、长度上限、空值视为没带），
-以及生成层到底用了谁的 Key——请求头里的优先，服务端 `.env` 里的只作兜底。
+以及生成层到底用了谁的 Key——请求头里的优先于账号里存的，服务端不预置 Key。
 """
 
 from __future__ import annotations
@@ -78,13 +78,12 @@ def test_build_generator_prefers_the_explicit_credentials():
     assert generator.model == "user-model"
 
 
-def test_build_generator_still_falls_back_to_the_server_key():
+def test_build_generator_never_falls_back_to_the_configured_key():
+    """服务端不替谁掏额度：配置里那份 Key 只给本地工具，请求链路一律不认它。"""
+
     settings = Settings(generator_api_key="server-key")
 
-    generator = build_generator(settings)
-
-    assert isinstance(generator, OpenAICompatibleGenerator)
-    assert generator._api_key == "server-key"
+    assert isinstance(build_generator(settings), UnconfiguredGenerator)
 
 
 def test_build_generator_without_any_key_stays_unconfigured():
@@ -127,8 +126,8 @@ def test_resolve_uses_the_key_from_the_header(client, monkeypatch, stub_generato
     assert stub_generator.calls, "生成层确实被调用了"
 
 
-def test_resolve_without_a_header_uses_the_cached_server_generator(client, monkeypatch, stub_generator):
-    """没带头时不能现造生成层：服务端配置那条路径要继续走缓存。"""
+def test_resolve_without_any_credentials_uses_the_cached_generator(client, monkeypatch, stub_generator):
+    """没有凭据时不能现造生成层：那条路径要继续走缓存的那个实现。"""
 
     monkeypatch.setattr(deps, "_generator_for", lambda settings: stub_generator)
     response = client.post("/api/recipes/resolve", json={"dish": UNCOVERED_DISH, "index": 157})

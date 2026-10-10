@@ -118,7 +118,8 @@ def test_unconfigured_generator_says_why():
     outcome = UnconfiguredGenerator().probe()
 
     assert outcome.ok is False
-    assert "没有可用的模型凭据" in outcome.detail
+    assert "模型 Key" in outcome.detail
+    assert "库内菜谱照常取" in outcome.detail
 
 
 def test_build_generator_exposes_probe_on_both_implementations():
@@ -136,7 +137,7 @@ def test_probe_endpoint_without_any_key_still_answers(client):
     assert body["ok"] is False
     assert body["configured"] is False
     assert body["model"] == "unset"
-    assert "没有可用的模型凭据" in body["detail"]
+    assert "模型 Key" in body["detail"]
 
 
 def test_probe_endpoint_uses_the_key_from_the_request_header(client, monkeypatch, stub_generator):

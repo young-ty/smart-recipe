@@ -193,7 +193,7 @@ def test_main_without_write_never_touches_the_generator(monkeypatch, capsys, tmp
     monkeypatch.setattr(tool, "RECIPES_PATH", _json(tmp_path, "recipes", RECIPES))
     monkeypatch.setattr(tool, "DRAFTS_PATH", tmp_path / "drafts.json")
 
-    def boom(settings):  # pragma: no cover - 被调用即失败
+    def boom(*args, **kwargs):  # pragma: no cover - 被调用即失败
         raise AssertionError("--plan 不该装配生成层")
 
     monkeypatch.setattr(tool, "build_generator", boom)
@@ -213,7 +213,7 @@ def test_main_write_then_merge_end_to_end(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(tool, "DRAFTS_PATH", drafts_path)
     monkeypatch.setattr(tool, "INGREDIENTS_PATH", _json(tmp_path, "ing", INGREDIENTS))
     monkeypatch.setattr(tool, "get_settings", lambda: Settings(generator_api_key="k"))
-    monkeypatch.setattr(tool, "build_generator", lambda settings: _Stub())
+    monkeypatch.setattr(tool, "build_generator", lambda *args, **kwargs: _Stub())
 
     assert tool.main(["--write", "--limit", "1"]) == 0
     written = json.loads(drafts_path.read_text(encoding="utf-8"))

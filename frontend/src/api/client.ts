@@ -9,6 +9,7 @@ import {
   demoResolve,
 } from '../demo'
 import { llmRequestHeaders } from '../llm-key'
+import type { LlmKeySettings } from '../llm-key'
 import type { MemoryEntry } from '../memory'
 import type {
   AccountUser,
@@ -120,6 +121,15 @@ export type LlmProbeResponse = {
   detail: string
 }
 
+/** 账号里那份模型 Key 的现状：只有掩码，明文不出来（设计方案 5.6.5） */
+export type LlmKeyResponse = {
+  configured: boolean
+  masked: string
+  base_url: string | null
+  model: string | null
+  updated_at: string | null
+}
+
 /** 静态演示站没有后端，账号与同步都无从谈起；这里明说不支持，不做假成功 */
 const DEMO_NO_BACKEND = '静态演示站不带后端服务：账号功能请在本地运行完整版'
 
@@ -220,4 +230,36 @@ export function probeLlmCredentials(): Promise<LlmProbeResponse> {
     method: 'POST',
     headers: llmRequestHeaders(),
   })
+}
+
+/** 账号里存着的 Key。登录后换成它，换设备也能接着用 */
+export function fetchLlmKey(): Promise<LlmKeyResponse> {
+  if (DEMO_MODE) {
+    return Promise.reject(new ApiError(50001, DEMO_NO_BACKEND))
+  }
+  return request<LlmKeyResponse>('/llm/key')
+}
+
+/** 把 Key 存进账号：服务端加密落库，返回的是掩码 */
+export function putLlmKey(settings: LlmKeySettings): Promise<LlmKeyResponse> {
+  if (DEMO_MODE) {
+    return Promise.reject(new ApiError(50001, DEMO_NO_BACKEND))
+  }
+  return request<LlmKeyResponse>('/llm/key', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      api_key: settings.apiKey,
+      base_url: settings.baseUrl || null,
+      model: settings.model || null,
+    }),
+  })
+}
+
+/** 忘掉账号里的 Key：库内菜谱照常取，库外菜回到「要填 Key」的提示 */
+export function deleteLlmKey(): Promise<void> {
+  if (DEMO_MODE) {
+    return Promise.resolve()
+  }
+  return request<void>('/llm/key', { method: 'DELETE' })
 }

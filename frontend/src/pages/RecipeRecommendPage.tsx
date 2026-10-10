@@ -13,17 +13,21 @@ import { useDishCoverage } from '../hooks/useDishCoverage'
 import { useMemorySync } from '../hooks/useMemorySync'
 import { useRecipeMemory } from '../hooks/useRecipeMemory'
 import { useRecipePage } from '../hooks/useRecipePage'
+import { ANON_MEMORY_SCOPE } from '../memory'
 import { pendingKind } from '../pending-hint'
 
 // 健康检查返回前的占位；返回后即替换为真实模型版本与类别数
 const FALLBACK_CAPTION = '模型: 检测中…'
 
 export function RecipeRecommendPage() {
-  // 菜谱记忆（FR-15）：做过的菜记在本机；识别到做过的菜直接复用这里的菜谱，
-  // 不再请求后端（库外菜也就不再消耗大模型额度）
-  const memory = useRecipeMemory()
   // 账号（FR-16）：未登录时整页照旧可用；登录后把本机记忆与服务端那份合并再同步
   const account = useAccount()
+  // 菜谱记忆（FR-15）：做过的菜记在本机；识别到做过的菜直接复用这里的菜谱，
+  // 不再请求后端（库外菜也就不再消耗大模型额度）。
+  // 本机这份按账号分区：登录 / 退出看到的是两份不同的记忆，不会混在一起。
+  const memory = useRecipeMemory(
+    account.user === null ? ANON_MEMORY_SCOPE : String(account.user.id),
+  )
   const syncState = useMemorySync(account.user, memory)
   const [authOpen, setAuthOpen] = useState(false)
   // 覆盖清单只用来决定等待文案说哪一句；取不到就退回通用提示
@@ -33,6 +37,8 @@ export function RecipeRecommendPage() {
     selectImage,
     recognize,
     selectCandidate,
+    requestRecipe,
+    canRequestRecipe,
     submitManualDish,
     showMemory,
     reset,
@@ -122,7 +128,7 @@ export function RecipeRecommendPage() {
               void selectSample(id)
             }}
           />
-          <LlmKeyCard online={!DEMO_MODE} />
+          <LlmKeyCard online={!DEMO_MODE} user={account.user} />
         </div>
         <div className="col col--candidates">
           <CandidateList
@@ -131,6 +137,9 @@ export function RecipeRecommendPage() {
             manualDish={state.manualDish}
             showManual={image !== null}
             onSelect={selectCandidate}
+            onRequestRecipe={requestRecipe}
+            canRequestRecipe={canRequestRecipe}
+            pendingKind={resolveBranch}
             onSubmitManual={submitManualDish}
           />
         </div>

@@ -16,7 +16,7 @@ export const UPLOAD_HARD_LIMIT_BYTES = 25 * 1024 * 1024
 
 export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-export const EMPTY_HINT_IDLE = '识别出菜品后，这里显示菜谱与做法'
+export const EMPTY_HINT_IDLE = '左边选好菜名后点「扒谱」，这里显示菜谱与做法'
 
 export const EMPTY_HINT_NO_CANDIDATE = '识别后这里显示候选菜品与置信度'
 

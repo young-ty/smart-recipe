@@ -13,6 +13,9 @@ vi.mock('../src/api/client', async (importOriginal) => {
     fetchMe: vi.fn(),
     fetchMemories: vi.fn(),
     putMemories: vi.fn(),
+    fetchLlmKey: vi.fn(),
+    putLlmKey: vi.fn(),
+    deleteLlmKey: vi.fn(),
     loginAccount: vi.fn(),
     registerAccount: vi.fn(),
     logoutAccount: vi.fn(),
@@ -26,8 +29,10 @@ import {
   fetchHealth,
   fetchMe,
   fetchMemories,
+  fetchLlmKey,
   loginAccount,
   logoutAccount,
+  putLlmKey,
   probeLlmCredentials,
   putMemories,
   recognizeImage,
@@ -48,7 +53,7 @@ import {
   picture,
 } from './fixtures'
 import type { ResolveResponse } from '../src/types'
-import { MEMORY_STORAGE_KEY } from '../src/memory'
+import { MEMORY_STORAGE_KEY, memoryStorageKey } from '../src/memory'
 
 // 演示图「梅菜扣肉」在库存里没有菜谱，用来验证「库外 + 未配 Key」的降级提示
 const UNCOVERED_INDEX = 83
@@ -86,7 +91,27 @@ beforeEach(() => {
   vi.mocked(fetchMemories).mockResolvedValue({ entries: [] })
   vi.mocked(putMemories).mockImplementation(async (entries) => ({ entries }))
   vi.mocked(logoutAccount).mockResolvedValue(undefined)
+  // 未登录时不会打账号里的 Key 接口；登录相关的用例各自覆盖
+  vi.mocked(fetchLlmKey).mockResolvedValue({
+    configured: false,
+    masked: '',
+    base_url: null,
+    model: null,
+    updated_at: null,
+  })
+  vi.mocked(putLlmKey).mockResolvedValue({
+    configured: true,
+    masked: 'sk-l••••cdef',
+    base_url: null,
+    model: null,
+    updated_at: null,
+  })
 })
+
+/** 识别出候选之后，菜谱要用户点一下「扒谱」才会去取 */
+async function revealRecipe(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: '扒谱' }))
+}
 
 describe('RecipeRecommendPage 初始状态', () => {
   it('健康检查返回前显示检测中占位', () => {
@@ -98,7 +123,7 @@ describe('RecipeRecommendPage 初始状态', () => {
     expect(screen.getByRole('heading', { name: '识别结果' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '菜谱与做法' })).toBeInTheDocument()
     expect(screen.getByText('识别后这里显示候选菜品与置信度')).toBeInTheDocument()
-    expect(screen.getByText('识别出菜品后，这里显示菜谱与做法')).toBeInTheDocument()
+    expect(screen.getByText('左边选好菜名后点「扒谱」，这里显示菜谱与做法')).toBeInTheDocument()
     expect(screen.getByText('模型: 检测中…')).toBeInTheDocument()
     expect(screen.getByText('模型状态检测中')).toBeInTheDocument()
   })
@@ -227,6 +252,7 @@ describe('RecipeRecommendPage 识别与菜谱链路', () => {
     )
     expect(recognizeImage).toHaveBeenCalledTimes(1)
 
+    await revealRecipe(user)
     await waitFor(() => expect(resolveRecipe).toHaveBeenCalledWith('红烧肉', 77))
     expect(await screen.findByRole('heading', { level: 3, name: '红烧肉' })).toBeInTheDocument()
     expect(recipePanel().getByText('库内菜谱')).toBeInTheDocument()
@@ -277,9 +303,11 @@ describe('RecipeRecommendPage 识别与菜谱链路', () => {
 
     uploadPicture(container, picture())
     await user.click(screen.getByRole('button', { name: '开始识别' }))
+    await revealRecipe(user)
     await screen.findByRole('heading', { level: 3, name: '红烧肉' })
 
     await user.click(screen.getByRole('radio', { name: '梅菜扣肉 0.7%' }))
+    await revealRecipe(user)
 
     expect(await screen.findByText('库内没有这道菜的菜谱，且生成服务未配置')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 3, name: '红烧肉' })).not.toBeInTheDocument()
@@ -370,6 +398,7 @@ describe('RecipeRecommendPage 手动纠正菜名（FR-10）', () => {
     uploadPicture(container, picture())
     await user.click(screen.getByRole('button', { name: '开始识别' }))
     await screen.findByRole('radio', { name: '红烧肉 88.5%' })
+    await revealRecipe(user)
     expect(await screen.findByText('库内没有这道菜的菜谱，且生成服务未配置')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText(LABEL), '麻婆豆腐')
@@ -399,6 +428,7 @@ describe('RecipeRecommendPage 手动纠正菜名（FR-10）', () => {
 
     await user.click(screen.getByRole('radio', { name: '梅菜扣肉 0.7%' }))
 
+    await revealRecipe(user)
     await waitFor(() => expect(resolveRecipe).toHaveBeenLastCalledWith('梅菜扣肉', 83))
     expect(screen.queryByText('当前按手输菜名解析：麻婆豆腐')).not.toBeInTheDocument()
     expect(screen.getByRole('radio', { name: '梅菜扣肉 0.7%' })).toHaveAttribute('aria-checked', 'true')
@@ -429,6 +459,7 @@ describe('RecipeRecommendPage 菜谱记忆（FR-15）', () => {
 
     uploadPicture(container, picture())
     await user.click(screen.getByRole('button', { name: '开始识别' }))
+    await revealRecipe(user)
     await screen.findByRole('heading', { level: 3, name: '红烧肉' })
 
     const item = await screen.findByRole('button', { name: '复用 红烧肉' })
@@ -454,6 +485,7 @@ describe('RecipeRecommendPage 菜谱记忆（FR-15）', () => {
     uploadPicture(container, picture())
     await user.click(screen.getByRole('button', { name: '开始识别' }))
 
+    await revealRecipe(user)
     expect(await screen.findByRole('heading', { level: 3, name: '红烧肉' })).toBeInTheDocument()
     expect(resolveRecipe).not.toHaveBeenCalled()
     expect(screen.getByText(/来自本机记忆/)).toBeInTheDocument()
@@ -526,6 +558,7 @@ describe('RecipeRecommendPage 等待提示（库内 / 生成分流）', () => {
     uploadPicture(container, picture())
     await user.click(screen.getByRole('button', { name: '开始识别' }))
 
+    await revealRecipe(user)
     expect(await recipePanel().findByText('库里已有这道菜，正在读取菜谱…')).toBeInTheDocument()
   })
 
@@ -539,6 +572,7 @@ describe('RecipeRecommendPage 等待提示（库内 / 生成分流）', () => {
     await user.click(screen.getByRole('button', { name: '开始识别' }))
     await user.click(await screen.findByRole('radio', { name: '梅菜扣肉 0.7%' }))
 
+    await revealRecipe(user)
     expect(await recipePanel().findByText(/正在让大模型现写/)).toBeInTheDocument()
   })
 
@@ -552,6 +586,7 @@ describe('RecipeRecommendPage 等待提示（库内 / 生成分流）', () => {
     uploadPicture(container, picture())
     await user.click(screen.getByRole('button', { name: '开始识别' }))
 
+    await revealRecipe(user)
     expect(await recipePanel().findByText('正在查询菜谱…')).toBeInTheDocument()
   })
 })
@@ -625,6 +660,21 @@ describe('RecipeRecommendPage 账号', () => {
 
     expect(await screen.findByRole('button', { name: '登录 / 注册' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '复用 本机的菜' })).toBeInTheDocument()
+  })
+
+  it('登录后本机记忆按账号分区：另一个账号看不到这个账号记的菜', async () => {
+    localStorage.setItem(
+      memoryStorageKey('7'),
+      JSON.stringify([memoryEntry({ dish: '账号的菜', name: '账号的菜' })]),
+    )
+    vi.mocked(fetchMe).mockResolvedValue({ user: ACCOUNT })
+
+    render(<RecipeRecommendPage />)
+
+    expect(await screen.findByRole('button', { name: '复用 账号的菜' })).toBeInTheDocument()
+    // 记在这个账号自己那块，不落到匿名区
+    expect(localStorage.getItem(memoryStorageKey('7'))).toContain('账号的菜')
+    expect(localStorage.getItem(MEMORY_STORAGE_KEY) ?? '').not.toContain('账号的菜')
   })
 })
 

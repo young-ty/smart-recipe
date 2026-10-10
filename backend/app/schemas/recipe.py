@@ -94,6 +94,12 @@ class ModelInfo(BaseModel):
 
 
 class GeneratorInfo(BaseModel):
+    """生成层现状。
+
+    `configured` 说的是**这次请求**有没有拿到可用凭据（请求头或账号里存的），
+    不是服务端配没配 Key——服务端不持有 Key，所以健康检查里它总是 false。
+    """
+
     configured: bool
     model: str
 

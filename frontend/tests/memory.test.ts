@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  ANON_MEMORY_SCOPE,
   MEMORY_LIMIT,
   MEMORY_STORAGE_KEY,
   findRemembered,
   formatRelativeTime,
   mergeMemories,
   memoryLimitNotice,
+  memoryStorageKey,
   normalizeMemory,
   orderMemory,
   readMemory,
@@ -312,5 +314,30 @@ describe('normalizeMemory', () => {
     ]
 
     expect(normalizeMemory(entries).map((entry) => entry.dish)).toEqual(['收藏的', '最近的'])
+  })
+})
+
+describe('按账号分区的存储键', () => {
+  it('匿名区沿用老键，账号区各自加后缀', () => {
+    expect(memoryStorageKey(ANON_MEMORY_SCOPE)).toBe(MEMORY_STORAGE_KEY)
+    expect(memoryStorageKey('7')).toBe(`${MEMORY_STORAGE_KEY}.user.7`)
+    expect(memoryStorageKey('8')).not.toBe(memoryStorageKey('7'))
+  })
+
+  it('写进哪个区块就只有哪个区块读得到', () => {
+    const storage = fakeStorage()
+    writeMemory([memoryEntry({ dish: '账号七的菜' })], storage, '7')
+
+    expect(readMemory(storage, '7').map((entry) => entry.dish)).toEqual(['账号七的菜'])
+    expect(readMemory(storage, '8')).toEqual([])
+    expect(readMemory(storage, ANON_MEMORY_SCOPE)).toEqual([])
+  })
+
+  it('不传区块名时读写匿名区，老数据照样读得出来', () => {
+    const storage = fakeStorage({
+      [MEMORY_STORAGE_KEY]: JSON.stringify([memoryEntry({ dish: '老数据' })]),
+    })
+
+    expect(readMemory(storage).map((entry) => entry.dish)).toEqual(['老数据'])
   })
 })

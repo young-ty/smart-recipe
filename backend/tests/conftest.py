@@ -61,6 +61,8 @@ def settings(tmp_path: Path) -> Settings:
         database_url=f"sqlite+pysqlite:///{(tmp_path / 'test.db').as_posix()}",
         models_dir=tmp_path / "models-not-delivered",
         generator_api_key="",
+        # 账号级 Key 的加解密主密钥也放进临时目录：用例之间互相看不到对方存的 Key
+        secret_key_file=tmp_path / "secret.key",
     )
 
 

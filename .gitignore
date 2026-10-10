@@ -33,6 +33,9 @@ ml/models/
 .env
 .env.local
 
+# 账号级模型 Key 的加密主密钥（首次启动自动生成，换机器要单独带走）
+secret.key
+
 # 菜谱草案（中间产物：审校后合进 seed 数据，本身不留版本）
 drafts/
 

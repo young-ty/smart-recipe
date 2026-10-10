@@ -313,7 +313,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("未配置 RECIPE_GENERATOR_API_KEY，无法起草。")
         return 1
 
-    generator = build_generator(settings)
+    # 起草是离线数据准备工作，用的是本地工具那份 Key（见 7.8）
+    generator = build_generator(settings, api_key=settings.generator_api_key)
     ingredient_index = build_ingredient_index(load_json(INGREDIENTS_PATH))
     selected = _select(blank, drafts, args)
     recipe_id = next_recipe_id(recipes + drafts.get("drafts", []))

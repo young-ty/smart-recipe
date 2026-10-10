@@ -53,6 +53,19 @@ class ProbeOutcome:
     detail: str
 
 
+@dataclass(frozen=True)
+class LlmCredentials:
+    """一份可用的大模型凭据：调用方自己带来的（请求头），或账号里存着的。
+
+    放在生成层而不是依赖层：请求头解析与账号解密都要产出它，
+    两边都依赖这里就不会互相依赖（见 7.8）。
+    """
+
+    api_key: str
+    base_url: Optional[str] = None
+    model: Optional[str] = None
+
+
 def _short(text: str, limit: int = PROBE_DETAIL_LIMIT) -> str:
     """把可能很长的响应正文压成一句话，别让错误信息把界面撑破。"""
 
@@ -253,7 +266,7 @@ class UnconfiguredGenerator:
         return None
 
     def probe(self) -> ProbeOutcome:
-        return ProbeOutcome(False, "没有可用的模型凭据：服务端未配置 Key，这次请求也没带")
+        return ProbeOutcome(False, "还没有可用的模型 Key：库内菜谱照常取，库外菜得先填一把自己的 Key")
 
 
 class OpenAICompatibleGenerator:
@@ -406,14 +419,15 @@ def build_generator(
     """装配生成层：未配置 Key 时返回不生成实现，不抛异常。
 
     显式传入的 `api_key` / `base_url` / `model` 优先于配置——请求头里带着用户自己的
-    Key 时走这条路径（见 7.8），服务端 `.env` 里的 Key 只作兜底。这里不缓存：
+    Key 时走这条路径（见 7.8）。**没有显式凭据就不生成**：服务端不预置额度，
+    `settings.generator_api_key` 只给本地工具用，不进这条链路。这里不缓存：
     用户凭据随每个请求来去，缓存下来既没有收益，也违背「用完即弃」。
     """
 
     settings = settings or get_settings()
-    resolved_key = (api_key or settings.generator_api_key or "").strip()
+    resolved_key = (api_key or "").strip()
     if not resolved_key:
-        logger.info("未配置大模型 API Key，生成分支将返回 unavailable")
+        logger.info("这次调用没有可用的模型 Key，生成分支返回 unavailable")
         return UnconfiguredGenerator()
     return OpenAICompatibleGenerator(
         api_key=resolved_key,

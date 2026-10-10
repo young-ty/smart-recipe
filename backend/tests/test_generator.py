@@ -304,15 +304,17 @@ def test_unexpected_body_shape_degrades():
 # --------------------------- 装配 ---------------------------
 
 def test_build_generator_without_key_is_unconfigured():
-    # 显式置空：本机 .env 里配了真 Key 也不该改变这条用例的预期
+    # 服务端不预置 Key：没有显式传入的凭据就一定是不生成实现
     generator = build_generator(Settings(generator_api_key=""))
     assert isinstance(generator, UnconfiguredGenerator)
     assert generator.configured is False
     assert generator.generate("红烧肉") is None
 
 
-def test_build_generator_with_key_is_configured():
-    generator = build_generator(Settings(generator_api_key="abc", generator_model="m"))
+def test_build_generator_with_explicit_key_is_configured():
+    """只有显式传入的凭据才算数：配置里那份不参与请求链路（见 7.8）。"""
+
+    generator = build_generator(Settings(), api_key="abc", model="m")
     assert isinstance(generator, OpenAICompatibleGenerator)
     assert generator.configured is True
     assert generator.model == "m"

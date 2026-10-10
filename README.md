@@ -8,7 +8,7 @@
 菜谱库命中直接给，库外由大模型生成后落库，下次同一道菜直接命中；存下来的菜随时翻出来就能照着做。
 
 识别模型为 **208 类菜品分类（timm `convnext_base.fb_in22k_ft_in1k`，288 × 288 输入）**，训练代码与前后端同在仓库里，
-覆盖**前端 + 后端 + 模型接入层 + 菜谱内容**。详细设计见 `docs/项目设计方案.md`（v2.33）。
+覆盖**前端 + 后端 + 模型接入层 + 菜谱内容**。详细设计见 `docs/项目设计方案.md`（v2.40）。
 
 **在线演示**：<https://young-ty.github.io/smart-recipe/>。这是纯前端静态版，打开就能点示例图走完
 「选图 → 候选 → 菜谱与做法 → 存进记忆」整条链路，手机上打开更像一个 App（可加到主屏）。
@@ -55,18 +55,20 @@
 | 手机端 | 已完成：与网页同一套前端，窄屏退化成单栏，页头与右下角按钮避开状态栏与手势区，触摸目标不小于 48 px；配 `manifest` 与手写 service worker，可「添加到主屏」当 App 用 |
 | 静态演示站（GitHub Pages） | 已完成：`npm run build:demo` 产出纯静态版并发布到 Pages，页面上的候选、置信度与菜谱都是真实模型与大模型输出固化成的快照，现场不跑模型、不联网。数据由 `backend/tools/export_demo_fixtures.py` 导出，契约见 `tests/test_demo_fixtures.py` |
 | 类别清单（208 类菜名） | 已收到：`ONNX/Food list - Menu.csv` → `models/dish_labels.json`（`backend/tools/import_labels.py` 转换），页面名称一律用清单真名 |
-| 生成结果落库 | 已完成：库外菜由大模型生成后写回 `recipes`（`origin = generated`，id ≥ 10000，评分为空），同名请求下次直接命中库内、不再消耗额度；页面标「大模型生成后自动入库」。`RECIPE_PROMOTE_GENERATED=0` 可关掉落库（演示每次都走生成分支）；老库启动时自动升到 schema v3 |
+| 生成结果落库 | 已完成：库外菜由大模型生成后写回 `recipes`（`origin = generated`，id ≥ 10000，评分为空），同名请求下次直接命中库内、不再消耗额度；页面标「大模型生成后自动入库」。`RECIPE_PROMOTE_GENERATED=0` 可关掉落库（演示每次都走生成分支）；老库启动时自动升到当前 schema（v5） |
 | 菜谱库覆盖率 | 208 类里 **73 类可承接**（64 类与类别名精确同名 + 9 类经 `alias` 别名映射）、**5 类显式缺口**（登记 `recipe_id: null`，走生成分支）、**130 类留白**（未登记）；库内 98 道菜谱。补库前先跑 `backend/tools/coverage_report.py`；种子文件的改动按条目同步进已有库，重启即生效。运行期生成结果落库后，`GET /api/dishes` 的可承接类别会随演示继续增加（自动入库的菜谱带 `origin = generated`，种子文件不被机器改写）；本报表只看种子文件，用来决定「该写哪些菜谱」 |
 | 识别服务的并发与延迟 | 已完成：推理移出事件循环 + 并发闸门（默认 4，可配）。并发 8 的吞吐 6.31 → 9.80 req/s，突发期间 `/api/health` 由 1234 ms 回到 68 ms；压测入口 `backend/tools/concurrency_probe.py`，数据见 `docs/识别服务并发与延迟优化记录.md` |
 | 可观测性 | 已完成：请求头 `X-Request-ID` 沿用或生成并写回、进 `ContextVar` 跟着日志走；日志默认「文本 + `[req=...]`」，`RECIPE_LOG_FORMAT=json` 可切 JSON；`GET /metrics` 暴露 11 项指标（自实现，不引第三方库）；离线读指标 `backend/tools/metrics_report.py`。见 `docs/可观测性与指标接入.md` |
 | 推理硬件与启动预热 | 已完成：执行提供程序按可用性选择（`RECIPE_ONNX_PROVIDERS`，默认 `auto`）并**校验会话真正拿到了什么**，拿不到加速是 WARNING 并写进 `/api/health` 的 `model.providers`；启动预热把会话加载从第一个请求挪到启动阶段，首请求墙钟 1324 → 197 ms。GPU 已跑通：补齐 `nvidia-*` 运行库并在建会话前挂进 DLL 搜索路径（`backend/app/core/cuda_dlls.py`）之后，单张 p50 由 140.7 ms 降到 11.3 ms，见 `docs/模型接入说明.md` 第 10 节与 `docs/项目设计方案.md` 7.3.2 |
-| 账号体系（FR-16） | 已完成：页头右上角注册 / 登录（邮箱 + 密码，注册即登录），会话走 httpOnly cookie（默认 30 天），登录后菜谱记忆按账号同步——合并放前端（按菜名取 `at` 较新的，收藏取并集），服务端只做去重、排序与截断。**未登录仍可用全部功能**；明确不做验证邮件、找回密码、第三方登录与双因素 |
-| 用户自带模型 Key | 已完成：左栏「我的模型 Key」卡片填自己的 Key，只存本机 `localStorage`、界面只回掩码，随 `X-LLM-Api-Key` 头传递，**服务端不缓存、不落库、不写日志**，请求头优先于 `.env`；「测试连接」走 `POST /api/llm/probe` 发一次最小调用，把填错的位置分开说清 |
+| 账号体系（FR-16） | 已完成：页头右上角注册 / 登录（邮箱 + 密码，注册即登录），会话走 httpOnly cookie（默认 30 天）。账号解决两件事：**存菜谱**（登录后记忆按账号同步，合并放前端，服务端只做去重、排序与截断；本机那份记忆也按账号分区，退出登录换回本机自己的记录）与**存模型 Key**（加密落库，读取只回掩码）。**未登录仍可用全部功能**；明确不做验证邮件、找回密码、第三方登录与双因素 |
+| 用户自带模型 Key | 已完成：左栏「我的模型 Key」卡片填自己的 Key。**服务端不预置任何 Key**，凭据按「请求头 `X-LLM-Api-Key` → 账号里存的那把」取值，都没有就返回「不生成」并提示去填。未登录时只存本机 `localStorage`、用完即弃；登录后加密存进账号（`users.llm_api_key_enc`），界面只回掩码；「测试连接」走 `POST /api/llm/probe` 发一次最小调用，把填错的位置分开说清 |
+| 扒谱（FR-17） | 已完成：识别出候选与切换候选**都不发取菜谱的请求**，只有点中栏的「扒谱」按钮（或提交手输菜名）才发一次。按钮下面写明这次是读库还是用你自己的 Key 现写，误点候选不会白花额度 |
 
 ## 目录结构
 
 ```
-backend/     FastAPI 服务：识别接入与降级、菜谱检索与生成分流、菜谱数据
+backend/     FastAPI 服务：识别接入与降级、菜谱检索与生成分流、账号与账号级模型 Key、菜谱数据
+             secret.key 是账号级模型 Key 的加密主密钥（首次启动自动生成，已在 .gitignore）
 frontend/    React + TypeScript 单页应用（Vite 构建）；public/ 放 PWA 图标、manifest 与 service worker，
              src/demo/ 是静态演示站的预置数据与取数逻辑
 deploy/      容器化用的 nginx 配置（静态站点 + /api 反向代理）
@@ -91,7 +93,7 @@ Dockerfile.backend / Dockerfile.frontend / docker-compose.yml / .dockerignore
 ```
 
 脚本先跑 `backend/tools/preflight.py`：Python 版本、后端依赖、权重与类别清单、种子数据、
-数据库可写、大模型 Key、前端依赖、8000/5173 端口占用。有 FAIL 就直接停下不启动——
+数据库可写、模型 Key（服务端不预置 Key，没配不算失败）、前端依赖、8000/5173 端口占用。有 FAIL 就直接停下不启动：
 演示当天的问题最好在启动前暴露，而不是讲了一半才发现。**已经起着的服务会被跳过**
 （只重开前端也能直接跑一遍），所以重复双击不会起两套；前端是等它真的能响应之后才打开浏览器，
 不是固定等几秒。自检单跑：
@@ -123,10 +125,13 @@ cd backend
 
 接口文档：<http://127.0.0.1:8000/docs>
 
-> 后端已是 v2.0 口径的五条接口：`POST /api/recognize`（成品菜候选）、`POST /api/recipes/resolve`（先查库后生成）、
-> `GET /api/recipes/{id}`、`GET /api/dishes`、`GET /api/health`。旧方向的 `/api/ingredients` 与 `/api/recommendations` 已下线（说明见设计方案 5.2 节）。
-> 旧数据库首次启动会自动迁移 schema（SQLite `PRAGMA user_version` 1 → 2），只重建识别日志、生成缓存与类别承接表这三张可再生表，
-> 菜谱与食材数据原样保留（迁移路径有 `backend/tests/test_database_migration.py` 守住）。
+> 五条主干接口：`POST /api/recognize`（成品菜候选）、`POST /api/recipes/resolve`（先查库后生成）、
+> `GET /api/recipes/{id}`、`GET /api/dishes`、`GET /api/health`；账号、记忆与模型 Key 另有一组 `/api/auth/*`、
+> `/api/memories`、`/api/llm/key`、`/api/llm/probe`（说明见设计方案 5.2、5.6 节）。
+> 旧方向的 `/api/ingredients` 与 `/api/recommendations` 已下线。
+> 旧数据库首次启动会自动迁移 schema（SQLite `PRAGMA user_version` 一路升到 5）：重建识别日志、生成缓存与类别承接表
+> 这三张可再生表，账号相关表与 `users` 上后加的 Key 列纯新增、不重建，菜谱与食材数据原样保留
+> （迁移路径有 `backend/tests/test_database_migration.py` 守住）。
 
 指标在 `GET /metrics`（Prometheus 文本格式，不在 OpenAPI 文档里）。不想起 Prometheus 就直接读成表：
 
@@ -288,18 +293,24 @@ npm run preview       # http://localhost:4173/ 本地看一遍
 
 ## 大模型 API 接入（生成层）
 
-库内菜谱直接返回，**库外菜的做法由大模型生成并写回库内**（方案见 `docs/生成式推荐接入方案.md`）。这一步是可选配置：
-不配 Key 系统照常运行，库外菜返回 `source="unavailable"`、`degraded=true`，页面提示「菜谱库暂缺，生成服务不可用」
-——能力可以没有，接口契约不能变。
+库内菜谱直接返回，**库外菜的做法由大模型生成并写回库内**（方案见 `docs/生成式推荐接入方案.md`）。
+额度由用的人自己出：**服务端不预置任何 Key**，`.env` 里那把只给本机工具用，请求链路完全不读它。
+没填 Key 也照常能用，只是库外菜返回 `source="unavailable"`、`degraded=true`，页面提示去填自己的模型 Key；
+能力可以没有，接口契约不能变。
 
-**配置**：把 `.env.example` 复制成 `.env`，填下面几个变量（`.env` 与 `.env.local` 都在 `.gitignore` 里，不入库）：
+**凭据从哪来**：登录后填一次 Key 会加密存进账号，后端按会话取用（见「账号」一节）；未登录时填的 Key
+只存这台设备的 `localStorage`，随 `X-LLM-Api-Key` 头发给后端，用完即弃。两处都有时**请求头优先**，
+方便临时换一把 Key 试试。
+
+**配置**（`.env` 与 `.env.local` 都在 `.gitignore` 里，不入库）：
 
 ```ini
-RECIPE_GENERATOR_API_KEY=sk-...                        # 必填，DeepSeek 控制台申请
-RECIPE_GENERATOR_BASE_URL=https://api.deepseek.com/v1
-RECIPE_GENERATOR_MODEL=deepseek-flash
+RECIPE_GENERATOR_API_KEY=sk-...                        # 只给 tools/ 下的本机工具用，服务不读它
+RECIPE_GENERATOR_BASE_URL=https://api.deepseek.com/v1   # 用户没填地址时的默认值
+RECIPE_GENERATOR_MODEL=deepseek-flash                   # 用户没填模型名时的默认值
 RECIPE_GENERATOR_TIMEOUT_SECONDS=20                     # 可选，默认 20 秒：单次生成的超时上限
 RECIPE_PROMOTE_GENERATED=1                              # 可选，默认 1：生成结果落库；设 0 则只写缓存
+RECIPE_SECRET_KEY=                                      # 可选：账号级 Key 的加密主密钥（32 字节十六进制或 base64）
 ```
 
 **生成结果落库**：生成成功的菜谱写回 `recipes`（`origin = generated`、id 从 10000 起编、评分为空），
@@ -345,25 +356,39 @@ $env:RECIPE_LIVE_TESTS="1"
 **实测（2026-09-22）**：`--models` 返回 `deepseek-flash`、`deepseek-v4-pro`；`--live` 生成「蛋包饭」通过结构化校验
 （主料 5 项 / 步骤 6 步，约 5 s）。复现命令见上。
 
-### 用你自己的 Key（可选）
+### 用你自己的 Key
 
-不想共用 `.env` 里那把 Key 时，在页面左栏「我的模型 Key」卡片里填自己的就行。Key 只存在你这台设备的
-`localStorage` 里，随请求经 `X-LLM-Api-Key` 头发给后端，**服务端不缓存、不落库、不写日志**，用完即弃；
-有请求头就用你的额度，没有才回落 `.env` 里那份。地址与模型名可以一起填（地址只接受 `https://`，
-本机地址可写 `http://localhost` 或 `http://127.0.0.1`），留空表示用服务端配的。
+左栏「我的模型 Key」卡片里填自己的 Key。**服务端不预置任何 Key**，生成分支认的就是你自己那把：
+
+| 状态 | Key 存在哪 | 怎么传给后端 |
+| --- | --- | --- |
+| 未登录 | 这台设备的 `localStorage`（键 `recipe-llm-key.v1`） | 随请求经 `X-LLM-Api-Key` 头发过去，用完即弃 |
+| 已登录 | 账号里（`users.llm_api_key_enc`，加密落库） | 后端按会话从账号里取，请求头不再带 |
+
+同一时刻只有一份生效：登录时会把本机那份迁进账号并清掉本机，退出登录再回到本机那份。地址与模型名可以一起填
+（地址只接受 `https://`，本机地址可写 `http://localhost` 或 `http://127.0.0.1`），留空表示用服务端的默认值。
+界面只回掩码，没有「查看明文」这个入口。
 
 填完点「测试连接」会真的发一次 `max_tokens=1` 的最小调用（`POST /api/llm/probe`），把「Key 无效 /
-地址不对 / 模型名不对 / 连不上」分开说清。不然填错了要等到某道库外菜生成失败才发现，而那时界面
-只会说一句「生成服务不可用」。
+地址不对 / 模型名不对 / 连不上」分开说清。不然填错了要等到某道库外菜生成失败才发现。
+
+账号里那把 Key 的读写接口：`GET /api/llm/key`（读掩码与地址 / 模型名）、`PUT /api/llm/key`（存或覆盖）、
+`DELETE /api/llm/key`（清掉，回到「没填」）。
 
 ## 账号（可选）
 
-页头右上角可以注册 / 登录。**不登录也能用全部功能**，账号解决的是记忆跨设备：登录后本机记忆会与
-服务端那份按菜名合并（时间较新的内容胜出，收藏取并集），合并结果整表推回服务端，换台设备登录就能接着用；
-退出登录只退当前会话，不动这台设备上的记忆。
+页头右上角可以注册 / 登录。**不登录也能用全部功能**，账号解决两件事：
+
+- **存菜谱**：登录后本机记忆与该账号那份按菜名合并（时间较新的内容胜出，收藏取并集），合并结果整表推回服务端，换台设备登录就能接着用。本机那份记忆也按账号分区：未登录看匿名区，登录后看该账号的区块，退出登录再换回本机自己的记录。
+- **存模型 Key**：填一次就跟着账号走，换设备登录不必重填；存的是密文，接口只回掩码。
+
+未登录时这两者都留在本机：记忆只写 `localStorage`，Key 只随请求头来去。账号是为了「换设备也能接着用」，
+不是「必须登录才能用」。
 
 会话令牌只走 httpOnly cookie，库里存的是它的 sha256 摘要；口令用标准库 PBKDF2-HMAC-SHA256
 （20 万次迭代、每账户独立盐）哈希，不引入 passlib / bcrypt / JWT。同一邮箱连续失败 5 次锁 5 分钟。
+账号里那把 Key 由 `backend/app/core/crypto.py` 的 `SecretBox` 加密（主密钥取 `RECIPE_SECRET_KEY`，
+缺省自动生成 `backend/secret.key`，已 gitignore；换机器部署时要把它一起带过去，否则旧密文解不开）。
 GitHub Pages 上的静态演示站没有后端，登录入口照旧显示，点开会说明这里用不了。
 
 ## 模型接入

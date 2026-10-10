@@ -67,6 +67,8 @@ NOISE_SUFFIXES = ("怎么做", "如何做", "的做法", "的菜谱", "做法", 
 PLACEHOLDER_PATTERN = re.compile(r"^类别\s*#\s*\d+$")
 
 UNAVAILABLE_REASON = "菜谱库暂缺，生成服务不可用"
+# 没带凭据时的说法要和「调了但失败」分开：前者用户自己能修，后者只能等
+NO_CREDENTIALS_REASON = "菜谱库暂缺，这道菜要现写需要你自己的模型 Key：在左侧「我的模型 Key」里填一把"
 PLACEHOLDER_REASON = "该类别还没有菜名，先补类别清单再走生成"
 
 # 模型写食材时爱加括号说明（「清水（打浆用）」「面粉(中筋)」），匹配前先剥掉
@@ -524,7 +526,12 @@ class RecipeResolver:
                 source=SOURCE_UNAVAILABLE,
                 degraded=True,
                 recipe=None,
-                reason=UNAVAILABLE_REASON,
+                # 没有凭据是「用户填一把就能解决」，别说成服务坏了
+                reason=(
+                    NO_CREDENTIALS_REASON
+                    if self._generator is None or not getattr(self._generator, "configured", False)
+                    else UNAVAILABLE_REASON
+                ),
             )
         self._cache_generated(key, payload)
         RECIPE_RESOLVE.inc(source=SOURCE_GENERATED)

@@ -53,9 +53,22 @@ export type PageState = {
   manualDish: string | null
   /** 手输提交次数：同名再提交也要重新解析，供解析 effect 作依赖 */
   manualSeq: number
+  /**
+   * 扒谱请求。**只有用户点了「扒谱」或提交了手输菜名才会有值**：
+   * 候选高亮与识别本身都不发请求，库外菜因此不会因为误点而烧掉额度（FR-17）。
+   */
+  resolveRequest: ResolveRequest | null
   resolve: ResolveState
   error: string | null
   model: ModelInfo | null
+}
+
+export type ResolveRequest = {
+  dish: string
+  /** 候选带类别下标，手输菜名没有 */
+  index: number | null
+  /** 递增序号：同一道菜再点一次也要重新走一遍解析 */
+  seq: number
 }
 
 export const initialPageState: PageState = {
@@ -65,6 +78,7 @@ export const initialPageState: PageState = {
   selectedIndex: null,
   manualDish: null,
   manualSeq: 0,
+  resolveRequest: null,
   resolve: EMPTY_RESOLVE,
   error: null,
   model: null,
@@ -77,6 +91,7 @@ export type PageAction =
   | { type: 'recognize-failure'; error: string }
   | { type: 'select-candidate'; index: number }
   | { type: 'submit-manual-dish'; dish: string }
+  | { type: 'request-recipe' }
   | { type: 'resolve-start' }
   | {
       type: 'resolve-success'
@@ -108,6 +123,7 @@ export function pageReducer(state: PageState, action: PageAction): PageState {
         candidates: [],
         selectedIndex: null,
         manualDish: null,
+        resolveRequest: null,
         resolve: EMPTY_RESOLVE,
       }
     case 'recognize-success':
@@ -118,28 +134,54 @@ export function pageReducer(state: PageState, action: PageAction): PageState {
         candidates: action.candidates,
         selectedIndex: defaultSelection(action.candidates),
         manualDish: null,
+        // 识别完只是把 top-1 选上，扒不扒谱由用户点按钮决定
+        resolveRequest: null,
         resolve: EMPTY_RESOLVE,
         model: action.model,
       }
     case 'recognize-failure':
       return { ...state, status: 'error', error: action.error }
     case 'select-candidate':
-      // 换候选必须丢掉上一道菜的结果，否则会显示成错菜谱
+      // 换候选必须丢掉上一道菜的结果，否则会显示成错菜谱；
+      // 同时作废上一次的扒谱请求，避免上一次的响应迟到后顶上来
       return {
         ...state,
         selectedIndex: action.index,
         manualDish: null,
-        resolve: { ...EMPTY_RESOLVE, loading: true },
+        resolveRequest: null,
+        resolve: EMPTY_RESOLVE,
       }
     case 'submit-manual-dish':
-      // 手输与候选互斥：清空选中下标，改按菜名（不带类别下标）解析
+      // 手输与候选互斥：清空选中下标，改按菜名（不带类别下标）解析。
+      // 提交是显式动作，直接解析，不再等一次按钮。
       return {
         ...state,
         selectedIndex: null,
         manualDish: action.dish,
         manualSeq: state.manualSeq + 1,
+        resolveRequest: {
+          dish: action.dish,
+          index: null,
+          seq: (state.resolveRequest?.seq ?? 0) + 1,
+        },
         resolve: { ...EMPTY_RESOLVE, loading: true },
       }
+    case 'request-recipe': {
+      const candidate = state.candidates.find((item) => item.index === state.selectedIndex)
+      if (candidate === undefined) {
+        // 没有可解析的候选：按钮此时本就不该可点，这里兜住不该发生的情况
+        return state
+      }
+      return {
+        ...state,
+        resolveRequest: {
+          dish: candidate.name,
+          index: candidate.index,
+          seq: (state.resolveRequest?.seq ?? 0) + 1,
+        },
+        resolve: { ...EMPTY_RESOLVE, loading: true },
+      }
+    }
     case 'resolve-start':
       return { ...state, resolve: { ...state.resolve, loading: true, error: null } }
     case 'resolve-success':
@@ -198,6 +240,10 @@ export type RecipePageController = {
   selectImage: (file: File) => void
   recognize: () => Promise<void>
   selectCandidate: (index: number) => void
+  /** 扒谱：把当前选中的候选交给后端解析（库内直读，库外才调大模型） */
+  requestRecipe: () => void
+  /** 「扒谱」按钮能不能点：选中了一个候选，且没有正在解析的请求 */
+  canRequestRecipe: boolean
   submitManualDish: (dish: string) => void
   /** 复用记忆里的菜谱：不发请求，直接展示存下来的那一份 */
   showMemory: (entry: MemoryEntry) => void
@@ -212,7 +258,7 @@ export type RecipePageOptions = {
 }
 
 /** 手输的菜名没有类别下标，这时只按菜名解析（归一化与别名匹配都在后端） */
-function requestRecipe(dish: string, index: number | null): Promise<ResolveResponse> {
+function loadRecipe(dish: string, index: number | null): Promise<ResolveResponse> {
   return index === null ? resolveRecipe(dish) : resolveRecipe(dish, index)
 }
 
@@ -315,27 +361,18 @@ export function useRecipePage(options: RecipePageOptions = {}): RecipePageContro
     }
   }, [])
 
-  // 菜谱解析的来源只有两种：选中的候选，或手输的菜名（FR-10）。
+  // 菜谱解析只有一个触发源：state.resolveRequest。它只在用户点「扒谱」或提交手输菜名
+  // 时才产生，识别出候选、切换候选都不发请求——库外菜的生成要花用户自己的额度，
+  // 不能因为点错一下候选就烧掉一次（FR-17）。
   // 解析前先查本机记忆（FR-15）：命中就直接展示存下来的那一份，一个请求都不发——
   // 做过的菜（尤其库外菜）不必再让大模型生成一次，省下的正是 token 与等待时间。
   // 未命中的照旧发起请求，且仅采纳最后一次请求的响应，丢弃过期响应。
-  const { selectedIndex, manualDish, manualSeq, candidates } = state
+  const resolveRequest = state.resolveRequest
   useEffect(() => {
-    let dish: string
-    let index: number | null = null
-    if (selectedIndex !== null) {
-      const candidate = candidates.find((item) => item.index === selectedIndex)
-      if (!candidate) {
-        return
-      }
-      dish = candidate.name
-      index = candidate.index
-    } else if (manualDish !== null) {
-      // 手输没有类别下标，只按菜名解析（归一化与别名匹配都在后端）
-      dish = manualDish
-    } else {
+    if (resolveRequest === null) {
       return
     }
+    const { dish, index } = resolveRequest
     const remembered = latestRef.current.findRemembered?.(dish) ?? null
     if (remembered !== null) {
       // 命中记忆：作废在途请求后直接展出，避免迟到的响应把它顶掉
@@ -347,7 +384,7 @@ export function useRecipePage(options: RecipePageOptions = {}): RecipePageContro
     const token = resolveTokenRef.current + 1
     resolveTokenRef.current = token
     dispatch({ type: 'resolve-start' })
-    const pending = requestRecipe(dish, index)
+    const pending = loadRecipe(dish, index)
     pending
       .then((body) => {
         if (token !== resolveTokenRef.current) {
@@ -378,15 +415,25 @@ export function useRecipePage(options: RecipePageOptions = {}): RecipePageContro
           dispatch({ type: 'resolve-failure', error: messageOf(error) })
         }
       })
-  }, [selectedIndex, manualDish, manualSeq, candidates])
+  }, [resolveRequest])
 
   useEffect(() => releasePreview, [releasePreview])
+
+  // 扒谱只认当前选中的候选：换过候选就按新的那个来，没选中时按钮是禁用的
+  const requestRecipe = useCallback(() => {
+    dispatch({ type: 'request-recipe' })
+  }, [])
+  const canRequestRecipe =
+    state.candidates.some((item) => item.index === state.selectedIndex) &&
+    !state.resolve.loading
 
   return {
     state,
     selectImage,
     recognize,
     selectCandidate,
+    requestRecipe,
+    canRequestRecipe,
     submitManualDish,
     showMemory,
     reset,

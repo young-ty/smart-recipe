@@ -826,6 +826,15 @@ body {
   font-size: var(--font-size-meta);
 }
 
+/* 账号是干什么的：登录前先把「能存什么」说清楚，而不是登录完才让人猜 */
+
+.modal-note {
+  margin: 0 0 14px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  line-height: 1.6;
+}
+
 /* 登录、注册与模型 Key 三处共用同一套字段样式 */
 
 .form {
@@ -957,6 +966,29 @@ body {
   color: var(--color-text-faint);
   font-size: var(--font-size-meta);
   line-height: 1.6;
+}
+
+/* 扒谱：识别与切换候选都不发请求，点这个按钮才去取菜谱（库外菜才会用到模型额度） */
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.reveal-hint {
+  margin: 0;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+  text-align: center;
 }
 
 /* 中屏（侧边栏打开、演示用的小窗口）：退化为「左照片 / 右候选 + 菜谱」两栏，

@@ -112,7 +112,7 @@ def test_run_live_without_key_is_a_failure_not_an_exception():
 
 
 def test_run_live_reports_structured_result(monkeypatch):
-    monkeypatch.setattr(tool, "build_generator", lambda settings: _stub_generator())
+    monkeypatch.setattr(tool, "build_generator", lambda *args, **kwargs: _stub_generator())
     ok, detail = tool.run_live(_configured(), "蛋包饭")
     assert ok is True
     assert "蛋包饭" in detail and "3 步" in detail
@@ -134,7 +134,7 @@ def test_run_live_actually_calls_the_configured_endpoint(monkeypatch):
     monkeypatch.setattr(
         tool,
         "build_generator",
-        lambda settings: OpenAICompatibleGenerator(
+        lambda settings, **kwargs: OpenAICompatibleGenerator(
             settings.generator_api_key,
             settings.generator_base_url,
             settings.generator_model,
@@ -167,7 +167,7 @@ def test_run_live_reports_failure_when_generation_degrades(monkeypatch):
         def generate(self, dish: str):
             return None
 
-    monkeypatch.setattr(tool, "build_generator", lambda settings: _Degraded())
+    monkeypatch.setattr(tool, "build_generator", lambda *args, **kwargs: _Degraded())
     ok, detail = tool.run_live(_configured(), "蛋包饭")
     assert ok is False
     assert "失败" in detail or "未通过" in detail

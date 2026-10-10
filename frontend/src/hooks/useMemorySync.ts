@@ -15,9 +15,10 @@ export type MemoryStore = {
 /**
  * 账号级记忆同步（FR-16）。
  *
- * 登录后先合再写：本机与服务端各有一份，只有前端同时握着两边，所以合并放在这里，
+ * 登录后先合再写：本机这份与服务端各有一份，只有前端同时握着两边，所以合并放在这里，
  * 服务端只做去重、排序与截断。合并结果一次推送、两边落定，之后本机每有变动再推一次。
- * 退出登录不清本机记忆：那是这台设备用过什么的记录，与账号无关。
+ * 登录前记在这台设备上的那几条由 useRecipeMemory 在换区块时带进来（见那边的注释），
+ * 这里读到的本机那份已经含它们了。退出登录不清本机记忆：那是这台设备用过什么的记录。
  */
 export function useMemorySync(user: AccountUser | null, store: MemoryStore): MemorySyncState {
   const [state, setState] = useState<MemorySyncState>('idle')

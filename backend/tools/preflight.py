@@ -131,10 +131,14 @@ def check_generator_layer(settings: Settings) -> CheckResult:
     if not info["configured"]:
         return CheckResult(
             "大模型 API",
-            WARN,
-            "未配置 Key：库内菜谱照常，库外菜会提示「生成服务不可用」（把 .env.example 复制成 .env 填好即可）",
+            OK,
+            "服务端不预置 Key（按设计）：生成只认调用方带来的凭据，库内菜谱照常，库外菜会提示填 Key",
         )
-    return CheckResult("大模型 API", OK, "%s @ %s" % (info["model"], info["base_url"]))
+    return CheckResult(
+        "大模型 API",
+        OK,
+        "本地工具凭据 %s @ %s（不参与线上生成）" % (info["model"], info["base_url"]),
+    )
 
 
 def _default_session_probe(settings: Settings):

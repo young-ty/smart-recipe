@@ -3,9 +3,10 @@
 三张表各放各的东西：`users` 只存密码哈希，`user_sessions` 只存会话令牌的摘要，
 `user_memories` 存用户同步上来的菜谱副本。
 
-大模型 Key **不进这三张表**：用户自己填的 Key 留在他自己的浏览器里，请求时随
-`X-LLM-Api-Key` 头带过来，服务端用完即弃——服务端不持有别人的密钥，
-也就不需要密钥加密存储与轮换（见 7.8）。
+大模型 Key 有两个去处，由用户自己选：不登录时留在他的浏览器里，请求时随
+`X-LLM-Api-Key` 头带过来、用完即弃；登录后可以存进 `users`，那是加密后才落库的
+（见 `core/crypto.py`），接口只回掩码，明文只在调用生成层的那一刻出现在内存里。
+两种情况服务端都不预置自己的 Key，也就不替任何人承担额度（见 7.8）。
 """
 
 from __future__ import annotations
@@ -43,6 +44,12 @@ class User(Base):
     display_name: Mapped[str] = mapped_column(String(32), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=_utcnow)
     last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    # 账号级模型 Key（FR-16）：值由 core/crypto.py 加密后落库，用的时候才解。
+    # 明文不进库、不进日志、不回给前端：接口只回掩码（见 7.8）。
+    llm_api_key_enc: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    llm_base_url: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    llm_model: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    llm_key_updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     def __repr__(self) -> str:  # pragma: no cover - 调试用
         return f"<User {self.id} {self.email}>"

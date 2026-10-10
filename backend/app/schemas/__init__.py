@@ -11,7 +11,7 @@ from .account import (
     UserEnvelope,
     UserOut,
 )
-from .llm import LlmProbeResponse
+from .llm import LlmKeyRequest, LlmKeyResponse, LlmProbeResponse
 from .recognize import DishCandidateOut, RecognizeResponse
 from .recipe import (
     DishItem,
@@ -49,4 +49,6 @@ __all__ = [
     "GeneratorInfo",
     "HealthResponse",
     "LlmProbeResponse",
+    "LlmKeyRequest",
+    "LlmKeyResponse",
 ]

@@ -114,7 +114,9 @@ class Settings:
     mock_model_version: str = "mock-dish-convnext-base-208"
     onnx_model_version: str = "dish-convnext-base-208-onnx"
 
-    # 生成层：未配置 Key 时正常降级，不算错误（设计方案 5.4）
+    # 本地工具（起草种子菜谱、凭据自检）用的 Key，**不在请求链路里**：
+    # 线上生成只认调用方自己带来的 Key（请求头 > 账号里存的），没有就返回 unavailable。
+    # 服务端不预置任何额度，也不替用户掏钱（设计方案 7.8）。
     generator_api_key: str = field(
         default_factory=lambda: os.getenv("RECIPE_GENERATOR_API_KEY", "")
     )
@@ -146,6 +148,13 @@ class Settings:
     )
     # 自动入库的菜谱 id 从这里起编，避开种子数据（101~175）与未来补库的号段
     promoted_recipe_id_base: int = 10000
+    # 账号级模型 Key 的落库加密主密钥（core/crypto.py）：优先取 RECIPE_SECRET_KEY，
+    # 没配就用这个文件，文件不存在时自动生成一份。
+    secret_key_file: Path = field(
+        default_factory=lambda: Path(
+            os.getenv("RECIPE_SECRET_KEY_FILE", str(BACKEND_DIR / "secret.key"))
+        )
+    )
 
     database_url: str = field(default_factory=_default_database_url)
 
@@ -171,6 +180,8 @@ class Settings:
 
     @property
     def generator_configured(self) -> bool:
+        """本地工具是否拿到了可用 Key；请求链路不看这个值（见 7.8）。"""
+
         return bool(self.generator_api_key)
 
 

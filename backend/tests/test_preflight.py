@@ -108,11 +108,13 @@ def test_database_check_reports_the_sqlite_file(tmp_path):
 
 # --------------------------- 生成层与前端 ---------------------------
 
-def test_generator_layer_warns_without_key(tmp_path):
+def test_generator_layer_reports_no_server_key_as_designed(tmp_path):
+    """服务端不预置 Key 是设计，不是待修的配置项。"""
+
     result = pf.check_generator_layer(_settings(tmp_path))
-    assert result.status == pf.WARN
+    assert result.status == pf.OK
     assert "RECIPE" not in result.detail  # 提示里不该冒出变量名给不了操作
-    assert "生成服务不可用" in result.detail
+    assert "不预置 Key" in result.detail
 
 
 def test_generator_layer_ok_reports_model_without_leaking_key(tmp_path):
@@ -120,6 +122,7 @@ def test_generator_layer_ok_reports_model_without_leaking_key(tmp_path):
     result = pf.check_generator_layer(settings)
     assert result.status == pf.OK
     assert "m" in result.detail
+    assert "不参与线上生成" in result.detail
     assert FAKE_KEY not in result.detail
 
 

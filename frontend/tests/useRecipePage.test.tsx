@@ -8,6 +8,7 @@ vi.mock('../src/api/client', async (importOriginal) => {
 
 import { ApiError, fetchHealth, recognizeImage, resolveRecipe } from '../src/api/client'
 import {
+  EMPTY_RESOLVE,
   defaultSelection,
   initialPageState,
   pageReducer,
@@ -103,7 +104,33 @@ describe('pageReducer', () => {
     expect(next.selectedIndex).toBe(110)
     expect(next.resolve.recipe).toBeNull()
     expect(next.resolve.source).toBeNull()
-    expect(next.resolve.loading).toBe(true)
+    // 换候选只是清空上一份结果：扒谱要等用户再点一次按钮
+    expect(next.resolve.loading).toBe(false)
+    expect(next.resolveRequest).toBeNull()
+  })
+
+  it('识别出候选不自动扒谱，点按钮才产生解析请求', () => {
+    const ready = pageReducer(initialPageState, {
+      type: 'recognize-success',
+      candidates: CANDIDATES,
+      model: HEALTH.model,
+    })
+
+    // 识别完先选上 top-1，但一个请求都不发
+    expect(ready.selectedIndex).toBe(77)
+    expect(ready.resolveRequest).toBeNull()
+    expect(ready.resolve).toEqual(EMPTY_RESOLVE)
+
+    const asked = pageReducer(ready, { type: 'request-recipe' })
+
+    expect(asked.resolveRequest).toEqual({ dish: '红烧肉', index: 77, seq: 1 })
+    expect(asked.resolve.loading).toBe(true)
+  })
+
+  it('没有选中候选时点扒谱不产生请求', () => {
+    const ready = pageReducer(initialPageState, { type: 'recognize-success', candidates: [], model: HEALTH.model })
+
+    expect(pageReducer(ready, { type: 'request-recipe' })).toBe(ready)
   })
 
   it('手输菜名会清空候选选中项并进入加载态', () => {
@@ -192,6 +219,10 @@ describe('useRecipePage', () => {
     expect(result.current.state.status).toBe('ready')
     expect(result.current.state.selectedIndex).toBe(77)
     expect(result.current.state.model?.version).toBe('dish-convnext-base-208-onnx')
+    // 识别本身不发请求：先点「扒谱」
+    expect(resolveRecipe).not.toHaveBeenCalled()
+    act(() => result.current.requestRecipe())
+
     await waitFor(() => expect(result.current.state.resolve.recipe?.name).toBe('红烧肉'))
     expect(resolveRecipe).toHaveBeenCalledWith('红烧肉', 77)
   })
@@ -209,9 +240,13 @@ describe('useRecipePage', () => {
     await act(async () => {
       await result.current.recognize()
     })
+    act(() => result.current.requestRecipe())
     expect(resolveRecipe).toHaveBeenCalledWith('红烧肉', 77)
 
     act(() => result.current.selectCandidate(110))
+    // 换候选先清空上一份结果，要再点一次「扒谱」才解析新的那个
+    expect(result.current.state.resolve.loading).toBe(false)
+    act(() => result.current.requestRecipe())
     await waitFor(() => expect(resolveRecipe).toHaveBeenCalledWith('类别 #110', 110))
     expect(result.current.state.resolve.loading).toBe(true)
 
@@ -244,6 +279,7 @@ describe('useRecipePage', () => {
       await result.current.recognize()
     })
 
+    act(() => result.current.requestRecipe())
     await waitFor(() => expect(result.current.state.resolve.error).toBe('无法连接后端服务，请确认服务已启动'))
     expect(result.current.state.candidates).toHaveLength(2)
     expect(result.current.state.selectedIndex).toBe(77)
@@ -287,6 +323,7 @@ describe('useRecipePage', () => {
     await act(async () => {
       await result.current.recognize()
     })
+    act(() => result.current.requestRecipe())
     await waitFor(() => expect(result.current.state.resolve.recipe).not.toBeNull())
 
     act(() => result.current.submitManualDish('  麻婆豆腐  '))
@@ -329,6 +366,7 @@ describe('useRecipePage', () => {
     await act(async () => {
       await result.current.recognize()
     })
+    act(() => result.current.requestRecipe())
     expect(resolvers).toHaveLength(1)
 
     act(() => result.current.submitManualDish('麻婆豆腐'))
@@ -378,6 +416,7 @@ describe('useRecipePage', () => {
 
     act(() => result.current.selectCandidate(83))
 
+    act(() => result.current.requestRecipe())
     await waitFor(() => expect(resolveRecipe).toHaveBeenLastCalledWith('梅菜扣肉', 83))
     expect(result.current.state.manualDish).toBeNull()
   })
@@ -422,6 +461,7 @@ describe('useRecipePage', () => {
       await result.current.recognize()
     })
 
+    act(() => result.current.requestRecipe())
     await waitFor(() => expect(resolveRecipe).toHaveBeenLastCalledWith('红烧肉', 77))
     expect(vi.mocked(resolveRecipe).mock.calls[0]).toHaveLength(2)
   })
@@ -452,6 +492,7 @@ describe('useRecipePage', () => {
     await act(async () => {
       await result.current.recognize()
     })
+    act(() => result.current.requestRecipe())
     expect(resolvers).toHaveLength(1)
 
     act(() => result.current.showMemory(memoryEntry({ dish: '番茄蛋花汤', name: '番茄蛋花汤' })))
@@ -473,6 +514,7 @@ describe('useRecipePage', () => {
       await result.current.recognize()
     })
 
+    act(() => result.current.requestRecipe())
     expect(resolveRecipe).not.toHaveBeenCalled()
     expect(result.current.state.resolve.recipe).toBe(remembered.recipe)
     expect(result.current.state.resolve.loading).toBe(false)
@@ -490,6 +532,7 @@ describe('useRecipePage', () => {
       await result.current.recognize()
     })
 
+    act(() => result.current.requestRecipe())
     await waitFor(() => expect(resolveRecipe).toHaveBeenCalledWith('红烧肉', 77))
     expect(result.current.state.resolve.rememberedAt).toBeNull()
   })

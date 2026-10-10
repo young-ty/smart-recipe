@@ -22,8 +22,17 @@ logger = logging.getLogger(__name__)
 # v3 要动 recipes 主表（rating 放开 NOT NULL、新增 origin），主数据不能重建，只能改表结构。
 # v4 新增 users / user_sessions / user_memories 三张表：纯新增，不碰已有表，
 # 建表交给 Base.metadata.create_all，这里只把版本号一起抬上去。
-SCHEMA_VERSION = 4
+# v5 给 users 加账号级模型 Key 的四列：SQLite 能直接 ADD COLUMN，主数据不用重建。
+SCHEMA_VERSION = 5
 _DISPOSABLE_TABLES = ("recognition_logs", "generated_recipes", "dish_recipe_map")
+
+# v5：账号级模型 Key（core/crypto.py 加密后落库，明文不进库）
+_USERS_ADDED_COLUMNS = {
+    "llm_api_key_enc": "TEXT",
+    "llm_base_url": "VARCHAR(200)",
+    "llm_model": "VARCHAR(64)",
+    "llm_key_updated_at": "DATETIME",
+}
 
 _RECIPES_COLUMNS = (
     "id",
@@ -108,6 +117,32 @@ def _table_columns(cursor, table: str) -> dict:
     return {row[1]: bool(row[3]) for row in rows}
 
 
+def _add_missing_columns(engine: Engine, table: str, columns: dict) -> bool:
+    """给已有表补列，返回是否动过表。SQLite 的 ADD COLUMN 不用重建表，主数据原样留着。
+
+    这里走 DBAPI 原生游标：`Base.metadata.create_all` 只建缺失的表，表已经在了就
+    不会补列，老库升级得靠这一步。
+    """
+
+    raw = engine.raw_connection()
+    cursor = raw.cursor()
+    changed = False
+    try:
+        present = _table_columns(cursor, table)
+        if not present:
+            return False
+        for name, ddl in columns.items():
+            if name in present:
+                continue
+            cursor.execute(f'ALTER TABLE "{table}" ADD COLUMN "{name}" {ddl}')
+            changed = True
+        raw.commit()
+    finally:
+        cursor.close()
+        raw.close()
+    return changed
+
+
 def _upgrade_recipes_table(engine: Engine) -> bool:
     """把 recipes 升到 v3（rating 放开 NOT NULL、新增 origin），返回是否重建过。
 
@@ -180,6 +215,8 @@ def migrate_schema(engine: Optional[Engine] = None) -> bool:
                 connection.execute(text(f'DROP TABLE IF EXISTS "{table}"'))
 
     _upgrade_recipes_table(engine)
+
+    _add_missing_columns(engine, "users", _USERS_ADDED_COLUMNS)
 
     with engine.begin() as connection:
         connection.execute(text(f"PRAGMA user_version = {SCHEMA_VERSION}"))

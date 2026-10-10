@@ -82,7 +82,8 @@ def fetch_model_ids(settings: Settings, client=None) -> List[str]:
 def run_live(settings: Settings, dish: str) -> Tuple[bool, str]:
     """真实调一次生成层，返回 (是否通过, 人话说明)。"""
 
-    generator = build_generator(settings)
+    # 本地自检工具显式用自己的 Key：请求链路已经不认配置里那份了（见 7.8）
+    generator = build_generator(settings, api_key=settings.generator_api_key)
     if not generator.configured:
         return False, "未配置 API Key"
     payload = generator.generate(dish)
@@ -106,6 +107,7 @@ def _print_config(info: dict) -> None:
         print(
             "    没读到 Key：把 .env.example 复制成 .env 填好 RECIPE_GENERATOR_API_KEY，"
             "或设同名系统环境变量（.env 只补空缺，系统环境变量优先）。"
+            "这份 Key 只给本机工具用，服务端不读它：页面上用的是用户在「我的模型 Key」里填的那把。"
         )
 
 

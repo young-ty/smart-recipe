@@ -19,6 +19,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from ..core.config import Settings
+from ..core.crypto import SecretBox, mask_secret
 from ..core.errors import bad_request, conflict, too_many_requests, unauthorized
 from ..core.security import (
     hash_password,
@@ -27,6 +28,7 @@ from ..core.security import (
     verify_password,
 )
 from ..models import User, UserMemory, UserSession
+from .generator import LlmCredentials
 
 logger = logging.getLogger(__name__)
 
@@ -288,3 +290,100 @@ def replace_memories(
         )
     session.flush()
     return kept
+
+
+# 本机地址是显式例外：本地起一个兼容 OpenAI 协议的网关（llama.cpp / vLLM）时用得上
+LOCAL_BASE_URL_PREFIXES = ("http://localhost", "http://127.0.0.1", "http://[::1]")
+MAX_BASE_URL_LENGTH = 200
+MAX_MODEL_LENGTH = 64
+
+
+@dataclass(frozen=True)
+class LlmKeyView:
+    """对外的账号级 Key 视图：只有掩码，没有明文。"""
+
+    configured: bool
+    masked: str
+    base_url: Optional[str]
+    model: Optional[str]
+    updated_at: Optional[datetime]
+
+
+def check_base_url(base_url: Optional[str]) -> Optional[str]:
+    """只接受 https，或本机 http：明文把 Key 发到外网是明确要挡掉的情况。"""
+
+    value = (base_url or "").strip().rstrip("/")
+    if not value:
+        return None
+    if len(value) > MAX_BASE_URL_LENGTH:
+        raise bad_request("模型地址过长")
+    if not (value.startswith("https://") or value.startswith(LOCAL_BASE_URL_PREFIXES)):
+        raise bad_request("模型地址只接受 https:// 或本机的 http://localhost / http://127.0.0.1")
+    return value
+
+
+def normalize_model(model: Optional[str]) -> Optional[str]:
+    """模型名留空表示用服务端配的默认值；超长直接挡回，不留给调用方去撞。"""
+
+    value = (model or "").strip()
+    if not value:
+        return None
+    if len(value) > MAX_MODEL_LENGTH:
+        raise bad_request("模型名过长")
+    return value
+
+
+def store_llm_key(
+    session: Session,
+    user: User,
+    *,
+    api_key: str,
+    base_url: Optional[str],
+    model: Optional[str],
+    box: SecretBox,
+) -> LlmKeyView:
+    """把 Key 加密后记到账号上。同一账号只有一份，再存就是覆盖。"""
+
+    key = (api_key or "").strip()
+    if not key:
+        raise bad_request("请填模型 Key")
+    user.llm_api_key_enc = box.encrypt(key)
+    user.llm_base_url = check_base_url(base_url)
+    user.llm_model = normalize_model(model)
+    user.llm_key_updated_at = _utcnow()
+    session.flush()
+    return LlmKeyView(True, mask_secret(key), user.llm_base_url, user.llm_model, user.llm_key_updated_at)
+
+
+def clear_llm_key(session: Session, user: User) -> None:
+    user.llm_api_key_enc = None
+    user.llm_base_url = None
+    user.llm_model = None
+    user.llm_key_updated_at = None
+    session.flush()
+
+
+def llm_key_view(user: User, box: SecretBox) -> LlmKeyView:
+    """账号里那份 Key 的现状。解不出来就当没配：换过主密钥、库被动过，都不该 500。"""
+
+    if not user.llm_api_key_enc:
+        return LlmKeyView(False, "", None, None, None)
+    plain = box.decrypt(user.llm_api_key_enc)
+    if plain is None:
+        logger.warning("账号 %s 的模型 Key 解不开（主密钥换过或数据被改过）", user.id)
+        return LlmKeyView(False, "", None, None, None)
+    return LlmKeyView(
+        True, mask_secret(plain), user.llm_base_url, user.llm_model, user.llm_key_updated_at
+    )
+
+
+def llm_credentials(user: Optional[User], box: SecretBox) -> Optional[LlmCredentials]:
+    """账号里存着的凭据；没登录、没存过、解不开都返回 None。"""
+
+    if user is None or not user.llm_api_key_enc:
+        return None
+    plain = box.decrypt(user.llm_api_key_enc)
+    if plain is None:
+        logger.warning("账号 %s 的模型 Key 解不开，本次不提供生成凭据", user.id)
+        return None
+    return LlmCredentials(api_key=plain, base_url=user.llm_base_url, model=user.llm_model)
