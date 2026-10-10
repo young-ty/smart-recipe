@@ -20,7 +20,9 @@ logger = logging.getLogger(__name__)
 # v2 只改了日志表结构并新增承接表与生成缓存，这三张表都是可再生的：
 # 日志是流水，承接表与缓存由种子数据与生成结果重建，所以直接重建而不写逐列迁移。
 # v3 要动 recipes 主表（rating 放开 NOT NULL、新增 origin），主数据不能重建，只能改表结构。
-SCHEMA_VERSION = 3
+# v4 新增 users / user_sessions / user_memories 三张表：纯新增，不碰已有表，
+# 建表交给 Base.metadata.create_all，这里只把版本号一起抬上去。
+SCHEMA_VERSION = 4
 _DISPOSABLE_TABLES = ("recognition_logs", "generated_recipes", "dish_recipe_map")
 
 _RECIPES_COLUMNS = (

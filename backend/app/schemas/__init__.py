@@ -1,5 +1,16 @@
 """Pydantic 请求/响应模型导出。"""
 
+from .account import (
+    LoginRequest,
+    MeResponse,
+    MemoryEntriesRequest,
+    MemoryEntryIn,
+    MemoryEntryOut,
+    MemoryListResponse,
+    RegisterRequest,
+    UserEnvelope,
+    UserOut,
+)
 from .recognize import DishCandidateOut, RecognizeResponse
 from .recipe import (
     DishItem,
@@ -15,6 +26,15 @@ from .recipe import (
 )
 
 __all__ = [
+    "LoginRequest",
+    "RegisterRequest",
+    "MeResponse",
+    "MemoryEntriesRequest",
+    "MemoryEntryIn",
+    "MemoryEntryOut",
+    "MemoryListResponse",
+    "UserEnvelope",
+    "UserOut",
     "DishCandidateOut",
     "RecognizeResponse",
     "ResolveRequest",

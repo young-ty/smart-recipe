@@ -123,6 +123,27 @@ class Settings:
     promote_generated: bool = field(
         default_factory=lambda: _env_flag("RECIPE_PROMOTE_GENERATED", True)
     )
+
+    # 账号与会话（设计方案 6.5）
+    session_ttl_days: int = field(
+        default_factory=lambda: max(1, int(os.getenv("RECIPE_SESSION_TTL_DAYS", "30")))
+    )
+    session_cookie_name: str = "recipe_session"
+    # HTTPS 部署时置 1：会话 cookie 只在加密连接上发送
+    session_cookie_secure: bool = field(
+        default_factory=lambda: _env_flag("RECIPE_COOKIE_SECURE", False)
+    )
+    # 账号级记忆的条数上限：与本机记忆同一个数，两边口径一致
+    memory_sync_limit: int = field(
+        default_factory=lambda: max(1, int(os.getenv("RECIPE_MEMORY_LIMIT", "12")))
+    )
+    # 登录失败限流：同一邮箱在窗口内失败到这个次数就锁一会儿（见 5.6.2）
+    login_max_failures: int = field(
+        default_factory=lambda: max(1, int(os.getenv("RECIPE_LOGIN_MAX_FAILURES", "5")))
+    )
+    login_lock_seconds: float = field(
+        default_factory=lambda: float(os.getenv("RECIPE_LOGIN_LOCK_SECONDS", "300"))
+    )
     # 自动入库的菜谱 id 从这里起编，避开种子数据（101~175）与未来补库的号段
     promoted_recipe_id_base: int = 10000
 

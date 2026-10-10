@@ -330,16 +330,28 @@ class OpenAICompatibleGenerator:
         return payload
 
 
-def build_generator(settings: Optional[Settings] = None) -> RecipeGenerator:
-    """装配生成层：未配置 Key 时返回不生成实现，不抛异常。"""
+def build_generator(
+    settings: Optional[Settings] = None,
+    *,
+    api_key: Optional[str] = None,
+    base_url: Optional[str] = None,
+    model: Optional[str] = None,
+) -> RecipeGenerator:
+    """装配生成层：未配置 Key 时返回不生成实现，不抛异常。
+
+    显式传入的 `api_key` / `base_url` / `model` 优先于配置——请求头里带着用户自己的
+    Key 时走这条路径（见 7.8），服务端 `.env` 里的 Key 只作兜底。这里不缓存：
+    用户凭据随每个请求来去，缓存下来既没有收益，也违背「用完即弃」。
+    """
 
     settings = settings or get_settings()
-    if not settings.generator_configured:
+    resolved_key = (api_key or settings.generator_api_key or "").strip()
+    if not resolved_key:
         logger.info("未配置大模型 API Key，生成分支将返回 unavailable")
         return UnconfiguredGenerator()
     return OpenAICompatibleGenerator(
-        api_key=settings.generator_api_key,
-        base_url=settings.generator_base_url,
-        model=settings.generator_model,
+        api_key=resolved_key,
+        base_url=(base_url or settings.generator_base_url),
+        model=(model or settings.generator_model),
         timeout_seconds=settings.generator_timeout_seconds,
     )

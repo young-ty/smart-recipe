@@ -7,9 +7,12 @@ from typing import Any, Optional
 # 错误码 -> 默认中文提示
 ERROR_MESSAGES = {
     40001: "请求参数校验失败",
+    40101: "登录状态已失效，请重新登录",
     40401: "资源不存在",
+    40901: "该邮箱已注册",
     41301: "图片超过 5 MB，请压缩后重试",
     41501: "不支持的图片格式，请上传 jpg / png / webp",
+    42901: "操作过于频繁，请稍后再试",
     50001: "服务内部错误，请稍后重试",
 }
 
@@ -48,3 +51,15 @@ def bad_request(message: Optional[str] = None, detail: Any = None) -> ApiError:
 
 def not_found(message: str = "资源不存在", detail: Any = None) -> ApiError:
     return ApiError(404, 40401, message, detail)
+
+
+def unauthorized(message: Optional[str] = None, detail: Any = None) -> ApiError:
+    return ApiError(401, 40101, message, detail)
+
+
+def conflict(message: Optional[str] = None, detail: Any = None) -> ApiError:
+    return ApiError(409, 40901, message, detail)
+
+
+def too_many_requests(message: Optional[str] = None, detail: Any = None) -> ApiError:
+    return ApiError(429, 42901, message, detail)

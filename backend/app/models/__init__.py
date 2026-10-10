@@ -5,6 +5,7 @@ from .dish import DishRecipeMap, GeneratedRecipe
 from .ingredient import Ingredient
 from .recipe import Recipe, RecipeIngredient, RecipeStep
 from .recognition_log import RecognitionLog
+from .user import User, UserMemory, UserSession
 
 __all__ = [
     "Base",
@@ -15,4 +16,7 @@ __all__ = [
     "RecipeIngredient",
     "RecipeStep",
     "RecognitionLog",
+    "User",
+    "UserMemory",
+    "UserSession",
 ]
