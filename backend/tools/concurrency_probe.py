@@ -34,6 +34,7 @@ REPO_ROOT = BACKEND_DIR.parent
 if str(BACKEND_DIR) not in sys.path:  # 支持直接 python backend/tools/concurrency_probe.py
     sys.path.insert(0, str(BACKEND_DIR))
 
+from tools.local_http import local_async_client  # noqa: E402
 from tools.perf_probe import percentile  # noqa: E402
 
 DEMO_DISHES_DIR = REPO_ROOT / "demo" / "dishes"
@@ -151,11 +152,9 @@ async def _sample_health(client, base_url: str, stop: asyncio.Event, samples: Li
 
 
 async def _sweep(base_url: str, images, levels: Sequence[int], rounds: int) -> List[Dict[str, object]]:
-    import httpx
-
     recognize_url = "%s/api/recognize" % base_url
     results: List[Dict[str, object]] = []
-    async with httpx.AsyncClient() as client:
+    async with local_async_client() as client:
         await _post_recognize(client, recognize_url, images[0])  # 预热：别把加载权重算进任何一档
         for level in levels:
             stop = asyncio.Event()

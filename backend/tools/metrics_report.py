@@ -28,6 +28,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from app.core.observability import ensure_utf8  # noqa: E402
+from tools.local_http import local_get  # noqa: E402
 
 DEFAULT_URL = "http://127.0.0.1:8000/metrics"
 
@@ -218,9 +219,7 @@ def _milliseconds(seconds: Optional[float]) -> str:
 
 
 def fetch(url: str) -> str:
-    import httpx
-
-    response = httpx.get(url, timeout=30)
+    response = local_get(url, timeout=30)
     response.raise_for_status()
     return response.text
 

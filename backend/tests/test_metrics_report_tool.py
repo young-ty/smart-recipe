@@ -10,6 +10,8 @@ import math
 import sys
 from pathlib import Path
 
+import httpx
+
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
@@ -130,6 +132,22 @@ def test_format_report_says_so_when_a_percentile_cannot_be_estimated():
 def test_format_report_handles_empty_input():
     rendered = report.format_report(report.summarize({}, []), "demo.txt")
     assert rendered.count("（还没有样本）") == 3
+
+
+def test_fetch_goes_through_the_proxy_free_helper(monkeypatch):
+    """读指标打的是本机服务，机器开着系统代理时也不能被接管。"""
+
+    seen = {}
+
+    def fake_get(url, **kwargs):
+        seen["url"] = url
+        seen["kwargs"] = kwargs
+        return httpx.Response(200, text="demo_total 1", request=httpx.Request("GET", url))
+
+    monkeypatch.setattr(report, "local_get", fake_get)
+    assert report.fetch("http://127.0.0.1:8000/metrics") == "demo_total 1"
+    assert seen["url"] == "http://127.0.0.1:8000/metrics"
+    assert seen["kwargs"] == {"timeout": 30}
 
 
 # --------------------------------------------------------------- 端到端
