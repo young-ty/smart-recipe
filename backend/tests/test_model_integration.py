@@ -37,7 +37,7 @@ LATENCY_BUDGET_MS = 500  # NFR-01：单张推理 P95（CPU + ONNX Runtime）
 CONFIDENCE_TOLERANCE = 0.002  # 设计方案 7.2「一致性」验收口径
 
 # 能给出库内菜谱的类别数（精确同名 + 别名映射），口径见 test_model_assets 与 seed_dish_map.json
-COVERED_CLASS_COUNT = 50
+COVERED_CLASS_COUNT = 73
 
 # 设计方案 2.4 的基准用例：4 张示例图的期望 top-1（第二代 convnext 权重的实测值）
 DEMO_FIXTURE = {

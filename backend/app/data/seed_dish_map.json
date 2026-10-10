@@ -218,5 +218,97 @@
   "125": {
     "recipe_id": 134,
     "alias": "鱿鱼"
+  },
+  "1": {
+    "recipe_id": 176,
+    "alias": null
+  },
+  "2": {
+    "recipe_id": 177,
+    "alias": null
+  },
+  "6": {
+    "recipe_id": 178,
+    "alias": null
+  },
+  "12": {
+    "recipe_id": 179,
+    "alias": null
+  },
+  "15": {
+    "recipe_id": 180,
+    "alias": null
+  },
+  "17": {
+    "recipe_id": 181,
+    "alias": null
+  },
+  "20": {
+    "recipe_id": 182,
+    "alias": null
+  },
+  "26": {
+    "recipe_id": 183,
+    "alias": null
+  },
+  "29": {
+    "recipe_id": 184,
+    "alias": null
+  },
+  "32": {
+    "recipe_id": 185,
+    "alias": null
+  },
+  "40": {
+    "recipe_id": 186,
+    "alias": null
+  },
+  "46": {
+    "recipe_id": 187,
+    "alias": null
+  },
+  "59": {
+    "recipe_id": 188,
+    "alias": null
+  },
+  "74": {
+    "recipe_id": 189,
+    "alias": null
+  },
+  "78": {
+    "recipe_id": 190,
+    "alias": null
+  },
+  "90": {
+    "recipe_id": 191,
+    "alias": null
+  },
+  "92": {
+    "recipe_id": 192,
+    "alias": null
+  },
+  "93": {
+    "recipe_id": 193,
+    "alias": null
+  },
+  "101": {
+    "recipe_id": 194,
+    "alias": null
+  },
+  "167": {
+    "recipe_id": 197,
+    "alias": null
+  },
+  "170": {
+    "recipe_id": 198,
+    "alias": null
+  },
+  "183": {
+    "recipe_id": 195,
+    "alias": null
+  },
+  "184": {
+    "recipe_id": 196,
+    "alias": null
   }
 }

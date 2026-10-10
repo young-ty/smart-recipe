@@ -158,6 +158,64 @@ def test_changed_recipe_is_rebuilt(seeded):
     assert _steps_of(seeded, 101)[0] == "用例改过的第一步"
 
 
+def _add_generated(seeded, name: str, recipe_id: int = 10008) -> None:
+    """造一条「运行期生成后落库」的菜谱：id 在生成号段，内容与种子不同。"""
+
+    with session_scope() as session:
+        session.add(
+            Recipe(
+                id=recipe_id,
+                name=name,
+                cook_time_minutes=3,
+                difficulty="简单",
+                servings=1,
+                description="大模型生成的版本",
+                origin="generated",
+            )
+        )
+
+
+def test_generated_recipe_with_the_same_name_gives_way(seeded):
+    """补库撞上运行期生成过的同名菜：旧的那条让位，种子内容顶上来。
+
+    菜名上有唯一约束，不处理的话这里是启动即失败；同一道菜留两条还会让库内检索
+    只命中其中一条。
+    """
+
+    _seed(seeded)
+    _add_generated(seeded, NEW_RECIPE["name"])
+    recipes = _read(seeded, "seed_recipes.json")
+    recipes.append(NEW_RECIPE)
+    _write(seeded, "seed_recipes.json", recipes)
+
+    summary = _seed(seeded)
+
+    assert summary["inserted"] is True
+    names = _recipe_names(seeded)
+    assert names[900] == NEW_RECIPE["name"]
+    assert 10008 not in names, "同名的那条生成菜谱应被种子内容顶掉"
+    assert _steps_of(seeded, 900) == NEW_RECIPE["steps"]
+
+
+def test_superseded_recipe_hands_its_class_over(seeded):
+    """被顶掉的菜认领过类别时，类别要跟着改指向，不能留下悬空的外键。"""
+
+    _seed(seeded)
+    _add_generated(seeded, NEW_RECIPE["name"])
+    with session_scope() as session:
+        session.add(DishRecipeMap(class_index=200, recipe_id=10008, alias=None))
+
+    recipes = _read(seeded, "seed_recipes.json")
+    recipes.append(NEW_RECIPE)
+    _write(seeded, "seed_recipes.json", recipes)
+
+    _seed(seeded)
+
+    with session_scope() as session:
+        row = session.get(DishRecipeMap, 200)
+        assert row is not None and row.recipe_id == 900
+
+
 def test_recipe_outside_the_seed_file_is_left_alone(seeded):
     """种子里没有的菜谱不动——可能是本机手工加的。"""
 

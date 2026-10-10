@@ -55,7 +55,7 @@
 | 静态演示站（GitHub Pages） | 已完成：`npm run build:demo` 产出纯静态版并发布到 Pages，页面上的候选、置信度与菜谱都是真实模型与大模型输出固化成的快照，现场不跑模型、不联网。数据由 `backend/tools/export_demo_fixtures.py` 导出，契约见 `tests/test_demo_fixtures.py` |
 | 类别清单（208 类菜名） | 已收到：`ONNX/Food list - Menu.csv` → `models/dish_labels.json`（`backend/tools/import_labels.py` 转换），页面名称一律用清单真名 |
 | 生成结果落库 | 已完成：库外菜由大模型生成后写回 `recipes`（`origin = generated`，id ≥ 10000，评分为空），同名请求下次直接命中库内、不再消耗额度；页面标「大模型生成后自动入库」。`RECIPE_PROMOTE_GENERATED=0` 可关掉落库（演示每次都走生成分支）；老库启动时自动升到 schema v3 |
-| 菜谱库覆盖率 | 208 类里 **50 类可承接**（41 类与类别名精确同名 + 9 类经 `alias` 别名映射）、**5 类显式缺口**（登记 `recipe_id: null`，走生成分支）、**153 类留白**（未登记）。补库前先跑 `backend/tools/coverage_report.py`；种子文件的改动按条目同步进已有库，重启即生效。运行期生成结果落库后，`GET /api/dishes` 的可承接类别会随演示继续增加（自动入库的菜谱带 `origin = generated`，种子文件不被机器改写）；本报表只看种子文件，用来决定「该写哪些菜谱」 |
+| 菜谱库覆盖率 | 208 类里 **73 类可承接**（64 类与类别名精确同名 + 9 类经 `alias` 别名映射）、**5 类显式缺口**（登记 `recipe_id: null`，走生成分支）、**130 类留白**（未登记）；库内 98 道菜谱。补库前先跑 `backend/tools/coverage_report.py`；种子文件的改动按条目同步进已有库，重启即生效。运行期生成结果落库后，`GET /api/dishes` 的可承接类别会随演示继续增加（自动入库的菜谱带 `origin = generated`，种子文件不被机器改写）；本报表只看种子文件，用来决定「该写哪些菜谱」 |
 | 识别服务的并发与延迟 | 已完成：推理移出事件循环 + 并发闸门（默认 4，可配）。并发 8 的吞吐 6.31 → 9.80 req/s，突发期间 `/api/health` 由 1234 ms 回到 68 ms；压测入口 `backend/tools/concurrency_probe.py`，数据见 `docs/识别服务并发与延迟优化记录.md` |
 | 可观测性 | 已完成：请求头 `X-Request-ID` 沿用或生成并写回、进 `ContextVar` 跟着日志走；日志默认「文本 + `[req=...]`」，`RECIPE_LOG_FORMAT=json` 可切 JSON；`GET /metrics` 暴露 11 项指标（自实现，不引第三方库）；离线读指标 `backend/tools/metrics_report.py`。见 `docs/可观测性与指标接入.md` |
 | 推理硬件与启动预热 | 已完成：执行提供程序按可用性选择（`RECIPE_ONNX_PROVIDERS`，默认 `auto`）并**校验会话真正拿到了什么**，拿不到加速是 WARNING 并写进 `/api/health` 的 `model.providers`；启动预热把会话加载从第一个请求挪到启动阶段，首请求墙钟 1324 → 197 ms。GPU 已跑通：补齐 `nvidia-*` 运行库并在建会话前挂进 DLL 搜索路径（`backend/app/core/cuda_dlls.py`）之后，单张 p50 由 140.7 ms 降到 11.3 ms，见 `docs/模型接入说明.md` 第 10 节与 `docs/项目设计方案.md` 7.3.2 |
@@ -113,7 +113,7 @@ D:\Anaconda3\envs\py39\python.exe -m venv --system-site-packages .venv
 # 可选：NVIDIA 显卡上要跑 GPU 推理时再装这份。缺了不会报错，只会静默回落 CPU
 # .\.venv\Scripts\python.exe -m pip install -r backend/requirements-gpu.txt
 
-# 启动（首次启动会自动建表并灌入 88 种食材 / 75 道菜谱）
+# 启动（首次启动会自动建表并灌入 179 种食材 / 98 道菜谱）
 cd backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
 ```

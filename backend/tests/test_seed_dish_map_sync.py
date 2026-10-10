@@ -101,16 +101,16 @@ def test_added_row_is_synced_without_force(seeded):
     with session_scope() as session:
         seed_database(session, seeded)
     before = _rows(seeded)
-    assert 2 not in before, "这条用例要挑一个种子文件里没有的类别"
+    assert 3 not in before, "这条用例要挑一个种子文件里没有的类别"
 
     payload = _read_map(seeded)
-    payload["2"] = {"recipe_id": 124, "alias": "煎豆腐"}
+    payload["3"] = {"recipe_id": 124, "alias": "豆腐花"}
     _write_map(seeded, payload)
 
     with session_scope() as session:
         summary = seed_database(session, seeded)
     assert summary["inserted"] is True, "新增映射应报告为一次写入"
-    assert _rows(seeded)[2] == (124, "煎豆腐")
+    assert _rows(seeded)[3] == (124, "豆腐花")
 
 
 def test_changed_row_is_synced_without_force(seeded):

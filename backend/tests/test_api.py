@@ -12,9 +12,9 @@ from sqlalchemy import func, select
 
 # 类别承接表的数据决定这三个数：能给出库内菜谱的类别数（精确同名 + 别名映射）、
 # 表里的总行数（含 5 行显式登记为无菜谱的缺口），以及菜谱库的规模
-COVERED_CLASS_COUNT = 50
-DISH_MAP_ROWS = 55
-LIBRARY_RECIPE_COUNT = 75
+COVERED_CLASS_COUNT = 73
+DISH_MAP_ROWS = 78
+LIBRARY_RECIPE_COUNT = 98
 
 # 别名映射的抽样：类别名 → (类别下标, 库内菜谱 id, 库内菜名)
 # 全部 8 条见 seed_dish_map.json，这里挑覆盖三种成因的代表（同义词 / 异写 / 简称）
@@ -398,7 +398,7 @@ def test_recipe_detail_serves_promoted_recipe_without_rating(app, stub_generator
 
 
 def test_promoted_recipe_closes_a_known_coverage_gap(app, stub_generator):
-    """落库顺带把显式留白的类别补上：可承接类别 50 → 51，库内菜谱 75 → 76。"""
+    """落库顺带把显式留白的类别补上：可承接类别 73 → 74，库内菜谱 98 → 99。"""
 
     from fastapi.testclient import TestClient
 

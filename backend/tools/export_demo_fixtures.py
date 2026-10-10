@@ -80,19 +80,19 @@ PHOTOS = [
         'id': 'mapo-tofu',
         'file': 'dish-mapo-tofu.jpg',
         'caption': '麻婆豆腐',
-        'note': '库内命中：豆腐系列里唯一已经在种子菜谱里登记过的一道。',
+        'note': '库内命中：豆腐系列里最早进种子菜谱的一道。',
     },
     {
         'id': 'home-style-tofu',
         'file': 'dish-home-style-tofu.jpg',
         'caption': '家常豆腐',
-        'note': '识别对了但库里没有，走生成分支；第二名是同族的煎豆腐。',
+        'note': '识别对了，也是库内命中：补库后家常豆腐进了种子菜谱；第二名是同族的煎豆腐。',
     },
     {
         'id': 'braised-tofu',
         'file': 'dish-braised-tofu.jpg',
         'caption': '酱烧豆腐块',
-        'note': '同一族的另一张：top-1 仍是家常豆腐，第二名追近了不少。',
+        'note': '同一族的另一张：top-1 仍是家常豆腐，第二名煎豆腐追近了不少，两道都已在库里。',
     },
     {
         'id': 'douhua',

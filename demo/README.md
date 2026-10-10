@@ -4,7 +4,7 @@
 以及 GitHub Pages 上的静态演示站（`npm run build:demo` 会把 `dishes/` 整目录复制进构建产物）。
 
 `recipes.json` 是静态演示站用的菜谱快照。库内那几道与 `backend/app/data/seed_recipes.json`
-逐字段一致，库外的（蛋包饭、莴笋肉丝、家常豆腐、豆腐花等）是运行期由大模型真实生成、
+逐字段一致，库外的（蛋包饭、莴笋肉丝、豆腐花、臭豆腐等）是运行期由大模型真实生成、
 落库之后再从库里导出的，`origin` 保留为 `generated`，演示站上照旧标「大模型生成后自动入库」。
 导出与刷新方式见 `backend/tools/export_demo_fixtures.py`，契约由 `tests/test_demo_fixtures.py` 守。
 
@@ -35,14 +35,15 @@
 ### 第二批：豆腐系列
 
 同一食材族的连续样本，适合现场演示两件事：近义类别之间的置信度差距，以及「库里没有的菜由大模型生成」。
-按 `backend/app/data/seed_dish_map.json`，只有 #0 麻婆豆腐可承接（`recipe_id` 106）；
-#1 ~ #4 目前是留白（未登记），与登记过的显式缺口一样都走生成分支。
+按 `backend/app/data/seed_dish_map.json`，#0 麻婆豆腐、#1 家常豆腐、#2 煎豆腐都已承接
+（`recipe_id` 106 / 176 / 177）；表里的 #3 豆腐花、#4 臭豆腐还是留白（未登记），
+与登记过的显式缺口一样走生成分支。
 
 | 文件 | 画面内容 | 实测 top-1 | 菜谱来源 |
 | --- | --- | --- | --- |
 | `dishes/dish-mapo-tofu.jpg` | 麻婆豆腐（豆腐块、红油、葱花） | #0 麻婆豆腐 87.0% | 库内命中（`seed_recipes.json` #106） |
-| `dishes/dish-home-style-tofu.jpg` | 家常豆腐（豆腐片配青椒、木耳、胡萝卜） | #1 家常豆腐 90.6% | 库外 → 生成后落库；#2 煎豆腐以 1.9% 退居第二 |
-| `dishes/dish-braised-tofu.jpg` | 酱烧豆腐块，配青椒、胡萝卜与木耳 | #1 家常豆腐 74.1% | 库外 → 生成后落库；#2 煎豆腐以 13.8% 退居第二 |
+| `dishes/dish-home-style-tofu.jpg` | 家常豆腐（豆腐片配青椒、木耳、胡萝卜） | #1 家常豆腐 90.6% | 库内命中（`seed_recipes.json` #176）；#2 煎豆腐以 1.9% 退居第二 |
+| `dishes/dish-braised-tofu.jpg` | 酱烧豆腐块，配青椒、胡萝卜与木耳 | #1 家常豆腐 74.1% | 库内命中（`seed_recipes.json` #176）；#2 煎豆腐以 13.8% 退居第二 |
 | `dishes/dish-douhua.jpg` | 豆花（内酯豆腐泡在红油汁里，撒花生与香菜） | #3 豆腐花 95.9% | 库外 → 生成后落库 |
 | `dishes/dish-pan-fried-tofu.jpg` | 煎豆腐块蘸红油汁，筷子夹起 | #4 臭豆腐 89.5% | 库外 → 生成后落库；#2 煎豆腐以 8.7% 退居第二 |
 

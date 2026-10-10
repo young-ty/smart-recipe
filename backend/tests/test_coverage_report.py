@@ -149,8 +149,8 @@ def test_real_coverage_does_not_regress():
         report.load_json(report.DEFAULT_MAP),
         report.load_json(report.DEFAULT_RECIPES),
     )
-    # 2026-09-22 补 26 道菜谱 + 1 条别名后是 50 类（41 精确同名 + 9 别名）
-    assert built["served"] >= 50, "可承接类别数比已交付的 50 类还少"
+    # 2026-09-22 补 26 道菜谱 + 1 条别名后是 50 类；2026-10-10 再补 23 道到 73 类
+    assert built["served"] >= 73, "可承接类别数比已交付的 73 类还少"
     assert built["coverage_of_registered"] >= 0.8
 
 

@@ -160,7 +160,7 @@
       "id": "mapo-tofu",
       "image": "demo/dishes/dish-mapo-tofu.jpg",
       "caption": "麻婆豆腐",
-      "note": "库内命中：豆腐系列里唯一已经在种子菜谱里登记过的一道。",
+      "note": "库内命中：豆腐系列里最早进种子菜谱的一道。",
       "candidates": [
         {
           "index": 0,
@@ -198,7 +198,7 @@
       "id": "home-style-tofu",
       "image": "demo/dishes/dish-home-style-tofu.jpg",
       "caption": "家常豆腐",
-      "note": "识别对了但库里没有，走生成分支；第二名是同族的煎豆腐。",
+      "note": "识别对了，也是库内命中：补库后家常豆腐进了种子菜谱；第二名是同族的煎豆腐。",
       "candidates": [
         {
           "index": 1,
@@ -236,7 +236,7 @@
       "id": "braised-tofu",
       "image": "demo/dishes/dish-braised-tofu.jpg",
       "caption": "酱烧豆腐块",
-      "note": "同一族的另一张：top-1 仍是家常豆腐，第二名追近了不少。",
+      "note": "同一族的另一张：top-1 仍是家常豆腐，第二名煎豆腐追近了不少，两道都已在库里。",
       "candidates": [
         {
           "index": 1,
@@ -948,68 +948,44 @@
       "source": "library",
       "degraded": false,
       "recipe": {
-        "id": 10008,
-        "origin": "generated",
+        "id": 176,
+        "origin": "seed",
         "name": "家常豆腐",
-        "cook_time_minutes": 25,
+        "cook_time_minutes": 15,
         "difficulty": "简单",
-        "rating": null,
-        "servings": 2,
-        "description": "关键点是先把豆腐煎至两面金黄定形，再用豆瓣酱和少量汤汁烧入味，轻推防碎。",
+        "rating": 4.5,
+        "servings": 3,
+        "description": "豆腐先煎后烧，比直接下锅更挂汁。",
         "required": [
-          {
-            "name": "青椒",
-            "amount": "1 个"
-          },
           {
             "name": "豆腐",
             "amount": "400 克"
           },
           {
-            "name": "胡萝卜",
-            "amount": "半根"
+            "name": "猪肉",
+            "amount": "100 克"
           }
         ],
         "optional": [
           {
             "name": "大蒜",
-            "amount": "3 瓣"
-          },
-          {
-            "name": "五花肉",
-            "amount": "100 克"
-          },
-          {
-            "name": "姜",
-            "amount": "1 小块"
+            "amount": "4 瓣"
           },
           {
             "name": "葱",
-            "amount": "1 根"
+            "amount": "2 根"
           },
           {
             "name": "生抽",
-            "amount": "1 汤匙"
-          },
-          {
-            "name": "蚝油",
-            "amount": "半汤匙"
+            "amount": "1 大勺"
           },
           {
             "name": "豆瓣酱",
-            "amount": "1 汤匙"
+            "amount": "1 大勺"
           },
           {
             "name": "淀粉",
-            "amount": "1 茶匙"
-          },
-          {
-            "name": "白糖",
-            "amount": "半茶匙"
-          },
-          {
-            "name": "盐",
-            "amount": "适量"
+            "amount": "1 小勺"
           },
           {
             "name": "食用油",
@@ -1017,15 +993,11 @@
           }
         ],
         "steps": [
-          "北豆腐切成约 1 厘米厚、3 厘米见方的片，用厨房纸吸干表面水分。",
-          "青椒去籽切菱形片，胡萝卜切薄片，若用干木耳提前泡发撕小朵，蒜姜切末，葱切段。",
-          "平底锅加 2 汤匙食用油，中火烧热后下豆腐片，煎至底面金黄再翻面，两面金黄后盛出。",
-          "锅内留底油，若加五花肉，下五花肉片中火煸炒至变色出油；若不加肉，直接下蒜末姜末。",
-          "加入 1 汤匙豆瓣酱，小火炒出红油，再放青椒片、胡萝卜片和木耳，大火翻炒约 1 分钟至断生。",
-          "倒入煎好的豆腐，加 1 汤匙生抽、半汤匙蚝油、半茶匙白糖和 100 毫升清水，用锅铲背面轻推均匀。",
-          "转中小火烧 2 到 3 分钟让豆腐入味，期间不要大力翻炒，避免豆腐碎烂。",
-          "取 1 茶匙淀粉加 2 汤匙清水调成水淀粉，沿锅边淋入，晃锅收汁至汤汁浓稠挂勺。",
-          "尝味后按需补少许盐，撒葱段，关火出锅装盘。"
+          "豆腐切三角厚片，用厨房纸吸干表面水",
+          "热锅少油，豆腐煎到两面金黄盛出",
+          "肉片下锅炒到变色，加豆瓣酱炒出红油",
+          "回锅合炒，加生抽与半碗水烧 2 分钟",
+          "淋薄芡收汁，撒葱花出锅"
         ],
         "video_url": "https://search.bilibili.com/all?keyword=%E5%AE%B6%E5%B8%B8%E8%B1%86%E8%85%90%20%E5%81%9A%E6%B3%95"
       },
@@ -1147,6 +1119,54 @@
       },
       "reason": null
     },
+    "煎豆腐": {
+      "dish": "煎豆腐",
+      "source": "library",
+      "degraded": false,
+      "recipe": {
+        "id": 177,
+        "origin": "seed",
+        "name": "煎豆腐",
+        "cook_time_minutes": 12,
+        "difficulty": "简单",
+        "rating": 4.4,
+        "servings": 2,
+        "description": "关键是别急着翻面，等一面起壳。",
+        "required": [
+          {
+            "name": "豆腐",
+            "amount": "400 克"
+          }
+        ],
+        "optional": [
+          {
+            "name": "葱",
+            "amount": "1 根"
+          },
+          {
+            "name": "生抽",
+            "amount": "1 大勺"
+          },
+          {
+            "name": "盐",
+            "amount": "少许"
+          },
+          {
+            "name": "食用油",
+            "amount": "适量"
+          }
+        ],
+        "steps": [
+          "豆腐切 1 厘米厚片，吸干表面水分",
+          "平底锅少油，中小火下豆腐",
+          "一面定型起壳再翻面，中途别动它",
+          "两面金黄后撒盐",
+          "淋生抽、撒葱花即可"
+        ],
+        "video_url": "https://search.bilibili.com/all?keyword=%E7%85%8E%E8%B1%86%E8%85%90%20%E5%81%9A%E6%B3%95"
+      },
+      "reason": null
+    },
     "地三鲜": {
       "dish": "地三鲜",
       "source": "library",
@@ -1251,6 +1271,71 @@
           "取出淋生抽与香油，撒葱花"
         ],
         "video_url": "https://search.bilibili.com/all?keyword=%E9%B8%A1%E8%9B%8B%E7%BE%B9%20%E5%81%9A%E6%B3%95"
+      },
+      "reason": null
+    },
+    "红烧牛肉": {
+      "dish": "红烧牛肉",
+      "source": "library",
+      "degraded": false,
+      "recipe": {
+        "id": 190,
+        "origin": "seed",
+        "name": "红烧牛肉",
+        "cook_time_minutes": 120,
+        "difficulty": "中等",
+        "rating": 4.8,
+        "servings": 4,
+        "description": "炒糖色决定成品亮不亮。",
+        "required": [
+          {
+            "name": "牛肉",
+            "amount": "800 克"
+          }
+        ],
+        "optional": [
+          {
+            "name": "冰糖",
+            "amount": "20 克"
+          },
+          {
+            "name": "姜",
+            "amount": "4 片"
+          },
+          {
+            "name": "葱",
+            "amount": "2 根"
+          },
+          {
+            "name": "生抽",
+            "amount": "3 大勺"
+          },
+          {
+            "name": "老抽",
+            "amount": "1 大勺"
+          },
+          {
+            "name": "料酒",
+            "amount": "2 大勺"
+          },
+          {
+            "name": "八角",
+            "amount": "2 颗"
+          },
+          {
+            "name": "香叶",
+            "amount": "2 片"
+          }
+        ],
+        "steps": [
+          "牛肉切块，冷水下锅焯去血沫，捞出冲净",
+          "锅里少油下冰糖，小火炒到琥珀色",
+          "下牛肉块翻炒，裹上糖色",
+          "加姜葱、八角香叶、料酒、生抽老抽",
+          "加热水没过牛肉，小火炖 90 分钟",
+          "开大火收汁到挂勺"
+        ],
+        "video_url": "https://search.bilibili.com/all?keyword=%E7%BA%A2%E7%83%A7%E7%89%9B%E8%82%89%20%E5%81%9A%E6%B3%95"
       },
       "reason": null
     },
