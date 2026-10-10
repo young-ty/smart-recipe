@@ -22,6 +22,7 @@ import json
 import logging
 import re
 import time
+from dataclasses import dataclass
 from typing import List, Literal, Optional, Protocol
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
@@ -37,6 +38,41 @@ Difficulty = Literal["简单", "中等", "困难"]
 MIN_STEP_LENGTH = 6  # 单条步骤的字数下限：挡住「略」「1」这种照着做不到的条目
 MIN_STEP_COUNT = 3  # 达标步骤的条数下限
 MAX_STEP_COUNT = 15  # 步骤条数上限：挡住把整篇正文塞进数组的跑偏输出（实测家常菜 8~11 步）
+
+# 凭据探活：一次最小调用只验证鉴权与地址，产生的费用可以忽略
+PROBE_PROMPT = "ping"
+PROBE_MAX_TOKENS = 1
+PROBE_DETAIL_LIMIT = 120
+
+
+@dataclass(frozen=True)
+class ProbeOutcome:
+    """探活结果：`ok` 是能不能用，`detail` 是给人看的一句话。"""
+
+    ok: bool
+    detail: str
+
+
+def _short(text: str, limit: int = PROBE_DETAIL_LIMIT) -> str:
+    """把可能很长的响应正文压成一句话，别让错误信息把界面撑破。"""
+
+    collapsed = " ".join((text or "").split())
+    return collapsed if len(collapsed) <= limit else collapsed[:limit] + "…"
+
+
+def _status_detail(response) -> str:
+    """把 HTTP 状态码翻译成「大概是哪里填错了」。"""
+
+    status = response.status_code
+    if status in (401, 403):
+        return "Key 无效，或这个 Key 没有调用该模型的权限"
+    if status == 404:
+        return "服务地址不对：在它下面找不到 /chat/completions"
+    if status == 429:
+        return "被限流，或账户余额不足"
+    if status == 400:
+        return f"请求被拒绝，模型名可能不对：{_short(response.text)}"
+    return f"模型服务返回 HTTP {status}：{_short(response.text)}"
 
 # 提示词版本：变更即换缓存键，避免命中旧提示词产出的结果（设计方案 7.5）
 # v3：角色与契约移入 system 消息、菜名用书名号定界，旧缓存自然失效
@@ -202,6 +238,9 @@ class RecipeGenerator(Protocol):
     def generate(self, dish: str) -> Optional[GeneratedRecipePayload]:  # pragma: no cover
         ...
 
+    def probe(self) -> ProbeOutcome:  # pragma: no cover
+        ...
+
 
 class UnconfiguredGenerator:
     """未配置大模型时的实现：始终不生成，让上层走明确提示态。"""
@@ -212,6 +251,9 @@ class UnconfiguredGenerator:
     def generate(self, dish: str) -> Optional[GeneratedRecipePayload]:  # noqa: ARG002
         GENERATOR_REQUESTS.inc(outcome="skipped")
         return None
+
+    def probe(self) -> ProbeOutcome:
+        return ProbeOutcome(False, "没有可用的模型凭据：服务端未配置 Key，这次请求也没带")
 
 
 class OpenAICompatibleGenerator:
@@ -328,6 +370,30 @@ class OpenAICompatibleGenerator:
         payload = self.parse_content(content)
         GENERATOR_REQUESTS.inc(outcome="ok" if payload is not None else "invalid")
         return payload
+
+    def probe(self) -> ProbeOutcome:
+        """确认 Key、地址与模型名都能用。
+
+        `generate` 把任何异常都收敛成 None，调用方看不出是 Key、地址还是模型名的
+        问题，界面只能笼统地说「生成服务不可用」。探活要把这件事说清楚，
+        所以这里按原因分类返回，不做统一降级。
+        """
+
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": PROBE_PROMPT}],
+            "max_tokens": PROBE_MAX_TOKENS,
+        }
+        headers = {"Authorization": f"Bearer {self._api_key}"}
+        url = f"{self._base_url}{self._PATH}"
+        try:
+            response = self._http_client().post(url, json=payload, headers=headers)
+        except Exception as exc:  # 连不上 / 超时：HTTP 都没走完，直接说连接问题
+            return ProbeOutcome(False, f"连不上模型服务：{_short(str(exc))}")
+        if response.status_code >= 400:
+            return ProbeOutcome(False, _status_detail(response))
+        logger.info("模型凭据探活通过：%s", self.model)
+        return ProbeOutcome(True, f"连接正常，模型 {self.model} 可用")
 
 
 def build_generator(

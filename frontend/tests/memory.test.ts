@@ -5,7 +5,9 @@ import {
   MEMORY_STORAGE_KEY,
   findRemembered,
   formatRelativeTime,
+  mergeMemories,
   memoryLimitNotice,
+  normalizeMemory,
   orderMemory,
   readMemory,
   rememberEntry,
@@ -236,5 +238,79 @@ describe('formatRelativeTime', () => {
   it('超过一周给出具体日期，时间戳在未来时按刚刚处理', () => {
     expect(formatRelativeTime(new Date(2026, 8, 1, 8, 0, 0).getTime(), now)).toBe('9 月 1 日')
     expect(formatRelativeTime(now + 60_000, now)).toBe('刚刚')
+  })
+})
+
+describe('账号同步的合并 mergeMemories（FR-16）', () => {
+  it('两边各有的菜合到一起，同名的只留一条', () => {
+    const merged = mergeMemories(
+      [memoryEntry({ dish: '红烧肉', at: 3 })],
+      [memoryEntry({ dish: '番茄蛋花汤', at: 2 })],
+    )
+
+    expect(merged.map((entry) => entry.dish)).toEqual(['红烧肉', '番茄蛋花汤'])
+  })
+
+  it('同名的菜取时间较新的那份内容', () => {
+    const merged = mergeMemories(
+      [memoryEntry({ dish: '红烧肉', at: 1, name: '本机那份' })],
+      [memoryEntry({ dish: '红烧肉', at: 9, name: '服务端那份' })],
+    )
+
+    expect(merged).toHaveLength(1)
+    expect(merged[0].name).toBe('服务端那份')
+  })
+
+  it('本机那份较新时用它，服务端不覆盖', () => {
+    const merged = mergeMemories(
+      [memoryEntry({ dish: '红烧肉', at: 9, name: '本机那份' })],
+      [memoryEntry({ dish: '红烧肉', at: 1, name: '服务端那份' })],
+    )
+
+    expect(merged[0].name).toBe('本机那份')
+  })
+
+  it('收藏标记取并集：在另一台设备上收藏过的菜不会被这次合并抹掉', () => {
+    const older = mergeMemories(
+      [memoryEntry({ dish: '红烧肉', at: 1, favorite: false })],
+      [memoryEntry({ dish: '红烧肉', at: 9, favorite: true })],
+    )
+
+    expect(older[0].favorite).toBe(true)
+    expect(older[0].at).toBe(9)
+
+    const newer = mergeMemories(
+      [memoryEntry({ dish: '红烧肉', at: 9, favorite: true })],
+      [memoryEntry({ dish: '红烧肉', at: 1, favorite: false })],
+    )
+    expect(newer[0].favorite).toBe(true)
+  })
+
+  it('合并结果照常按收藏在前、各自最近在前排序，并截到上限', () => {
+    const local = Array.from({ length: MEMORY_LIMIT }, (_, i) =>
+      memoryEntry({ dish: `本机${i}`, at: i + 1 }),
+    )
+    const remote = [memoryEntry({ dish: '服务端收藏的', at: 0, favorite: true })]
+
+    const merged = mergeMemories(local, remote)
+
+    expect(merged).toHaveLength(MEMORY_LIMIT)
+    expect(merged[0].dish).toBe('服务端收藏的')
+    expect(merged.some((entry) => entry.dish === '本机0')).toBe(false)
+  })
+
+  it('两边都空时结果是空，不凭空造条目', () => {
+    expect(mergeMemories([], [])).toEqual([])
+  })
+})
+
+describe('normalizeMemory', () => {
+  it('重排后收藏的排在最前', () => {
+    const entries = [
+      memoryEntry({ dish: '最近的', at: 5 }),
+      memoryEntry({ dish: '收藏的', at: 1, favorite: true }),
+    ]
+
+    expect(normalizeMemory(entries).map((entry) => entry.dish)).toEqual(['收藏的', '最近的'])
   })
 })

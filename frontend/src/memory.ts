@@ -1,9 +1,10 @@
 // 菜谱记忆（FR-15）：做过的菜留在本机，下次识别到同一道菜就直接复用、不再请求后端。
 //
-// 只落 localStorage，不入库、不上传照片：记忆是「这台设备用过什么」的记录，
-// 不需要账号，也就不涉及用户数据外发。任何读写失败（无痕模式、配额满）都降级为空，
-// 记忆功能坏掉不能影响识别与取菜谱的主链路。
+// 默认只落 localStorage，不入库、不上传照片。登录之后可以另存一份到账号上（FR-16），
+// 合并去重放在前端：只有前端同时握着本机与服务端两份数据。任何读写失败（无痕模式、
+// 配额满）都降级为空，记忆功能坏掉不能影响识别与取菜谱的主链路。
 
+import { defaultStorage, readStoredJson, writeStoredJson } from './storage'
 import type { RecipeOut, RecipeSource } from './types'
 
 export type MemoryEntry = {
@@ -21,38 +22,6 @@ export type MemoryEntry = {
 
 export const MEMORY_LIMIT = 12
 export const MEMORY_STORAGE_KEY = 'recipe-memory.v1'
-
-/** 取 localStorage；隐私模式下访问本身就可能抛异常，一律当作没有存储 */
-function defaultStorage(): Storage | null {
-  try {
-    return globalThis.localStorage ?? null
-  } catch {
-    return null
-  }
-}
-
-function readJson(key: string, target: Storage | null): unknown {
-  if (target === null) {
-    return null
-  }
-  try {
-    const raw = target.getItem(key)
-    return raw === null ? null : JSON.parse(raw)
-  } catch {
-    return null
-  }
-}
-
-function writeJson(key: string, value: unknown, target: Storage | null): void {
-  if (target === null) {
-    return
-  }
-  try {
-    target.setItem(key, JSON.stringify(value))
-  } catch {
-    // 配额满或被禁用：记忆退化成「只对本次打开有效」，不影响主链路
-  }
-}
 
 function isMemoryEntry(value: unknown): value is MemoryEntry {
   if (typeof value !== 'object' || value === null) {
@@ -73,7 +42,7 @@ function isMemoryEntry(value: unknown): value is MemoryEntry {
 
 /** 读记忆：解析失败、结构不对、被改坏的条目一律丢掉，只保留能用的 */
 export function readMemory(target: Storage | null = defaultStorage()): MemoryEntry[] {
-  const raw = readJson(MEMORY_STORAGE_KEY, target)
+  const raw = readStoredJson(MEMORY_STORAGE_KEY, target)
   if (!Array.isArray(raw)) {
     return []
   }
@@ -92,7 +61,7 @@ export function writeMemory(
   entries: MemoryEntry[],
   target: Storage | null = defaultStorage(),
 ): void {
-  writeJson(MEMORY_STORAGE_KEY, entries, target)
+  writeStoredJson(MEMORY_STORAGE_KEY, entries, target)
 }
 
 /**
@@ -132,6 +101,34 @@ export function orderMemory(entries: MemoryEntry[]): MemoryEntry[] {
     }
     return right.at - left.at
   })
+}
+
+/** 整表落地前的归一化：先按收藏在前、各自最近在前重排，再截到上限 */
+export function normalizeMemory(entries: MemoryEntry[]): MemoryEntry[] {
+  return orderMemory(entries).slice(0, MEMORY_LIMIT)
+}
+
+/**
+ * 合并两份记忆（账号同步，FR-16）。
+ *
+ * 同名的菜只留一条：时间较新的那份内容胜出，收藏标记取并集——两边只要有一边收藏过
+ * 就算收藏。在另一台设备上标的收藏不该被这次合并抹掉，所以这里不取「较新那条的标记」。
+ */
+export function mergeMemories(local: MemoryEntry[], remote: MemoryEntry[]): MemoryEntry[] {
+  const byDish = new Map<string, MemoryEntry>()
+  for (const entry of remote) {
+    byDish.set(entry.dish, entry)
+  }
+  for (const entry of local) {
+    const other = byDish.get(entry.dish)
+    if (other === undefined) {
+      byDish.set(entry.dish, entry)
+      continue
+    }
+    const newer = entry.at >= other.at ? entry : other
+    byDish.set(entry.dish, { ...newer, favorite: entry.favorite || other.favorite })
+  }
+  return normalizeMemory([...byDish.values()])
 }
 
 /** 删掉一条：清空是整表操作，只想去掉某道做错的菜时用它 */

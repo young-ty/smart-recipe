@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .api import routes_accounts, routes_ops, routes_recipes, routes_recognize
+from .api import routes_accounts, routes_llm, routes_ops, routes_recipes, routes_recognize
 from .api.deps import get_recognizer
 from .core.config import Settings, get_settings
 from .core.concurrency import InferenceGate
@@ -96,6 +96,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     app.include_router(routes_recognize.router)
     app.include_router(routes_recipes.router)
     app.include_router(routes_accounts.router)
+    app.include_router(routes_llm.router)
     app.include_router(routes_ops.router)
 
     init_engine(settings)

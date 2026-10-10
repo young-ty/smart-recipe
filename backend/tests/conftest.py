@@ -20,7 +20,7 @@ if str(BACKEND_DIR) not in sys.path:
 
 from app.core.config import Settings  # noqa: E402
 from app.main import create_app  # noqa: E402
-from app.services.generator import GeneratedRecipePayload  # noqa: E402
+from app.services.generator import GeneratedRecipePayload, ProbeOutcome  # noqa: E402
 
 REPO_ROOT = BACKEND_DIR.parent
 DEMO_DISHES_DIR = REPO_ROOT / "demo" / "dishes"
@@ -125,6 +125,9 @@ class StubGenerator:
     def generate(self, dish: str):
         self.calls.append(dish)
         return self.payload
+
+    def probe(self) -> ProbeOutcome:
+        return ProbeOutcome(True, f"连接正常，模型 {self.model} 可用")
 
 
 @pytest.fixture()

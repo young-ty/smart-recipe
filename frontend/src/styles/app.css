@@ -737,6 +737,228 @@ body {
   cursor: not-allowed;
 }
 
+/* ---------- 账号与模型 Key（FR-16） ---------- */
+
+/* 页头左标题、右账号；窄屏时账号换到标题下方，不跟标题抢宽度 */
+.topbar-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar-text {
+  min-width: 0;
+}
+
+.account-btn {
+  flex: none;
+  padding: 6px 14px;
+  font-size: var(--font-size-meta);
+}
+
+.account-hint {
+  flex: none;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+}
+
+.account-signed {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-meta);
+}
+
+.account-name {
+  max-width: 14ch;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-sync {
+  color: var(--color-text-faint);
+}
+
+/* 登录 / 注册弹窗 */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17, 17, 17, 0.35);
+}
+
+.modal {
+  width: 100%;
+  max-width: 360px;
+  padding: 22px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-fab);
+}
+
+.modal-title {
+  margin: 0 0 14px;
+  font-size: var(--font-size-title);
+  font-weight: 600;
+}
+
+.modal-notice {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+  font-size: var(--font-size-meta);
+}
+
+.modal-switch {
+  margin: 14px 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+/* 登录、注册与模型 Key 三处共用同一套字段样式 */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-label {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.field-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-chip);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+}
+
+.field-input:focus-visible {
+  border-color: var(--color-border-strong);
+  outline: none;
+}
+
+.field-input:disabled {
+  background: var(--color-muted-bg);
+  color: var(--color-text-faint);
+}
+
+.field-hint {
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+}
+
+.field-error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-meta);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 模型 Key 卡片：跟在上传窗口下面，左栏上下两块都是「输入的入口」 */
+
+.key-card {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+}
+
+.key-notice {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+  font-size: var(--font-size-meta);
+}
+
+.key-empty {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+  line-height: 1.6;
+}
+
+.key-saved {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.key-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--font-size-meta);
+}
+
+.key-label {
+  flex: none;
+  color: var(--color-text-faint);
+}
+
+.key-line code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 探活结果：成与不成各一句，位置固定在按钮下方，不来回跳 */
+
+.key-probe {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-chip);
+  font-size: var(--font-size-meta);
+  line-height: 1.5;
+}
+
+.key-probe--ok {
+  background: var(--color-accent-bg);
+  color: var(--color-accent-text);
+}
+
+.key-probe--failed {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+.key-caption {
+  margin: 10px 0 0;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
+  line-height: 1.6;
+}
+
 /* 中屏（侧边栏打开、演示用的小窗口）：退化为「左照片 / 右候选 + 菜谱」两栏，
    上传窗口始终留在左侧；只有更窄的手机宽度才叠成单栏。 */
 @media (max-width: 1120px) {
@@ -789,6 +1011,22 @@ body {
   /* 手机专属：刘海屏与小白条要留内边距，触摸目标不小于 48 px */
   .topbar {
     padding: max(16px, env(safe-area-inset-top)) 16px 0;
+  }
+
+  /* 手机上没有并排的余地：账号换到标题下方另起一行 */
+  .topbar-main {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal {
+    max-width: none;
+  }
+
+  /* 触摸目标不小于 48 px；弹窗里的输入框与按钮同样适用 */
+  .field-input,
+  .form-actions .btn {
+    min-height: 48px;
   }
 
   .card {

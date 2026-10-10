@@ -1,13 +1,18 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
+import { AccountBar } from '../components/AccountBar'
+import { AuthDialog } from '../components/AuthDialog'
 import { CandidateList } from '../components/CandidateList'
+import { LlmKeyCard } from '../components/LlmKeyCard'
 import { PhotoRecognizeCard } from '../components/PhotoRecognizeCard'
 import { RecipeMemoryCard } from '../components/RecipeMemoryCard'
 import { RecipePanel } from '../components/RecipePanel'
 import { DEMO_MODE, DEMO_SAMPLES, demoNotice, demoSampleById, fetchDemoImageFile } from '../demo'
+import { useAccount } from '../hooks/useAccount'
+import { useDishCoverage } from '../hooks/useDishCoverage'
+import { useMemorySync } from '../hooks/useMemorySync'
 import { useRecipeMemory } from '../hooks/useRecipeMemory'
 import { useRecipePage } from '../hooks/useRecipePage'
-import { useDishCoverage } from '../hooks/useDishCoverage'
 import { pendingKind } from '../pending-hint'
 
 // 健康检查返回前的占位；返回后即替换为真实模型版本与类别数
@@ -17,6 +22,10 @@ export function RecipeRecommendPage() {
   // 菜谱记忆（FR-15）：做过的菜记在本机；识别到做过的菜直接复用这里的菜谱，
   // 不再请求后端（库外菜也就不再消耗大模型额度）
   const memory = useRecipeMemory()
+  // 账号（FR-16）：未登录时整页照旧可用；登录后把本机记忆与服务端那份合并再同步
+  const account = useAccount()
+  const syncState = useMemorySync(account.user, memory)
+  const [authOpen, setAuthOpen] = useState(false)
   // 覆盖清单只用来决定等待文案说哪一句；取不到就退回通用提示
   const covered = useDishCoverage()
   const {
@@ -70,8 +79,21 @@ export function RecipeRecommendPage() {
   return (
     <>
       <header className="topbar">
-        <h1 className="app-title">基于深度学习的智能菜谱识别</h1>
-        <p className="app-sub">拍照记录一道好菜 → 认出菜名 → 一键扒谱</p>
+        <div className="topbar-main">
+          <div className="topbar-text">
+            <h1 className="app-title">基于深度学习的智能菜谱识别</h1>
+            <p className="app-sub">拍照记录一道好菜 → 认出菜名 → 一键扒谱</p>
+          </div>
+          <AccountBar
+            user={account.user}
+            checking={account.checking}
+            syncState={syncState}
+            onOpenAuth={() => setAuthOpen(true)}
+            onLogout={() => {
+              void account.logout()
+            }}
+          />
+        </div>
         {DEMO_MODE ? (
           <p className="demo-banner">
             静态演示站：不跑模型、不联网。候选与置信度是 <code>models/dish.onnx</code> 的真实输出，
@@ -100,6 +122,7 @@ export function RecipeRecommendPage() {
               void selectSample(id)
             }}
           />
+          <LlmKeyCard online={!DEMO_MODE} />
         </div>
         <div className="col col--candidates">
           <CandidateList
@@ -126,6 +149,18 @@ export function RecipeRecommendPage() {
           />
         </div>
       </div>
+      <AuthDialog
+        open={authOpen}
+        available={account.available}
+        onClose={() => setAuthOpen(false)}
+        onSubmit={async (mode, values) => {
+          if (mode === 'login') {
+            await account.login(values.email, values.password)
+          } else {
+            await account.register(values.email, values.password, values.displayName)
+          }
+        }}
+      />
     </>
   )
 }

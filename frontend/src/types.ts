@@ -111,3 +111,11 @@ export type HealthResponse = {
   model: ModelInfo
   generator: { configured: boolean; model: string }
 }
+
+/** 登录账号：服务端只回这几个字段，密码哈希与任何令牌都不出后端 */
+export type AccountUser = {
+  id: number
+  email: string
+  display_name: string
+  created_at: string
+}

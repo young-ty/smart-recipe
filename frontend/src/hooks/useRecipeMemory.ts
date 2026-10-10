@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   findRemembered,
+  normalizeMemory,
   readMemory,
   rememberEntry,
   removeEntry,
@@ -19,6 +20,8 @@ export type RecipeMemoryController = {
   remove: (dish: string) => void
   /** 收藏 / 取消收藏：收藏的排在前面，记满时也不被挤掉 */
   toggleFavorite: (dish: string) => void
+  /** 整表替换：账号同步合并完回写本机时用 */
+  replaceAll: (entries: MemoryEntry[]) => void
   clear: () => void
 }
 
@@ -49,7 +52,11 @@ export function useRecipeMemory(): RecipeMemoryController {
     setEntries((previous) => toggleFavorite(previous, dish))
   }, [])
 
+  const replaceAll = useCallback((next: MemoryEntry[]) => {
+    setEntries(normalizeMemory(next))
+  }, [])
+
   const find = useCallback((dish: string) => findRemembered(entries, dish), [entries])
 
-  return { entries, remember, find, remove, toggleFavorite: toggle, clear }
+  return { entries, remember, find, remove, toggleFavorite: toggle, replaceAll, clear }
 }

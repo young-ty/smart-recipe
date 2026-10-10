@@ -10,12 +10,33 @@ vi.mock('../src/api/client', async (importOriginal) => {
     resolveRecipe: vi.fn(),
     fetchHealth: vi.fn(),
     fetchDishes: vi.fn(),
+    fetchMe: vi.fn(),
+    fetchMemories: vi.fn(),
+    putMemories: vi.fn(),
+    loginAccount: vi.fn(),
+    registerAccount: vi.fn(),
+    logoutAccount: vi.fn(),
+    probeLlmCredentials: vi.fn(),
   }
 })
 
-import { ApiError, fetchDishes, fetchHealth, recognizeImage, resolveRecipe } from '../src/api/client'
+import {
+  ApiError,
+  fetchDishes,
+  fetchHealth,
+  fetchMe,
+  fetchMemories,
+  loginAccount,
+  logoutAccount,
+  probeLlmCredentials,
+  putMemories,
+  recognizeImage,
+  resolveRecipe,
+} from '../src/api/client'
 import { EMPTY_HINT_MEMORY } from '../src/constants'
+import { LLM_KEY_STORAGE_KEY } from '../src/llm-key'
 import { RecipeRecommendPage } from '../src/pages/RecipeRecommendPage'
+import type { AccountUser } from '../src/types'
 import {
   AMBIGUOUS_RECOGNIZED,
   DISHES,
@@ -51,9 +72,20 @@ beforeEach(() => {
   vi.mocked(resolveRecipe).mockReset()
   vi.mocked(fetchHealth).mockReset()
   vi.mocked(fetchDishes).mockReset()
+  vi.mocked(fetchMe).mockReset()
+  vi.mocked(fetchMemories).mockReset()
+  vi.mocked(putMemories).mockReset()
+  vi.mocked(loginAccount).mockReset()
+  vi.mocked(logoutAccount).mockReset()
+  vi.mocked(probeLlmCredentials).mockReset()
   vi.mocked(fetchHealth).mockResolvedValue(HEALTH)
   vi.mocked(fetchDishes).mockResolvedValue(DISHES)
   vi.mocked(resolveRecipe).mockResolvedValue(LIBRARY)
+  // 默认按未登录走：账号相关的用例各自改这两条
+  vi.mocked(fetchMe).mockResolvedValue({ user: null })
+  vi.mocked(fetchMemories).mockResolvedValue({ entries: [] })
+  vi.mocked(putMemories).mockImplementation(async (entries) => ({ entries }))
+  vi.mocked(logoutAccount).mockResolvedValue(undefined)
 })
 
 describe('RecipeRecommendPage 初始状态', () => {
@@ -521,5 +553,96 @@ describe('RecipeRecommendPage 等待提示（库内 / 生成分流）', () => {
     await user.click(screen.getByRole('button', { name: '开始识别' }))
 
     expect(await recipePanel().findByText('正在查询菜谱…')).toBeInTheDocument()
+  })
+})
+
+describe('RecipeRecommendPage 账号', () => {
+  const ACCOUNT: AccountUser = {
+    id: 7,
+    email: 'hakura@example.com',
+    display_name: 'hakura',
+    created_at: '2026-10-10T00:00:00',
+  }
+
+  it('未登录时页头给登录入口，识别与取菜谱照旧能用', async () => {
+    vi.mocked(recognizeImage).mockResolvedValue(RECOGNIZED)
+    const user = userEvent.setup()
+    const { container } = render(<RecipeRecommendPage />)
+
+    expect(await screen.findByRole('button', { name: '登录 / 注册' })).toBeInTheDocument()
+
+    uploadPicture(container, picture())
+    await user.click(screen.getByRole('button', { name: '开始识别' }))
+
+    expect(await screen.findByRole('radio', { name: '红烧肉 88.5%' })).toBeInTheDocument()
+  })
+
+  it('点登录打开弹窗', async () => {
+    const user = userEvent.setup()
+    render(<RecipeRecommendPage />)
+
+    await user.click(await screen.findByRole('button', { name: '登录 / 注册' }))
+
+    expect(screen.getByRole('dialog', { name: '登录' })).toBeInTheDocument()
+  })
+
+  it('登录成功后页头换成账号名，并把服务端那份记忆并进来', async () => {
+    vi.mocked(loginAccount).mockResolvedValue({ user: ACCOUNT })
+    vi.mocked(fetchMemories).mockResolvedValue({
+      entries: [memoryEntry({ dish: '服务端的菜', name: '服务端的菜' })],
+    })
+    const user = userEvent.setup()
+    render(<RecipeRecommendPage />)
+
+    await user.click(await screen.findByRole('button', { name: '登录 / 注册' }))
+    await user.type(screen.getByLabelText('邮箱'), 'hakura@example.com')
+    await user.type(screen.getByLabelText('密码'), 'password123')
+    await user.click(screen.getByRole('button', { name: '登录' }))
+
+    expect(await screen.findByText('hakura')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: '复用 服务端的菜' })).toBeInTheDocument()
+    expect(putMemories).toHaveBeenCalled()
+  })
+
+  it('刷新后仍认得出登录态，并自动同步记忆', async () => {
+    vi.mocked(fetchMe).mockResolvedValue({ user: ACCOUNT })
+    render(<RecipeRecommendPage />)
+
+    expect(await screen.findByText('hakura')).toBeInTheDocument()
+    await waitFor(() => expect(fetchMemories).toHaveBeenCalled())
+  })
+
+  it('退出后回到登录入口，本机记忆留着', async () => {
+    vi.mocked(fetchMe).mockResolvedValue({ user: ACCOUNT })
+    localStorage.setItem(
+      MEMORY_STORAGE_KEY,
+      JSON.stringify([memoryEntry({ dish: '本机的菜', name: '本机的菜' })]),
+    )
+    const user = userEvent.setup()
+    render(<RecipeRecommendPage />)
+
+    await user.click(await screen.findByRole('button', { name: '退出' }))
+
+    expect(await screen.findByRole('button', { name: '登录 / 注册' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '复用 本机的菜' })).toBeInTheDocument()
+  })
+})
+
+describe('RecipeRecommendPage 模型 Key', () => {
+  it('页面上有填写入口', async () => {
+    render(<RecipeRecommendPage />)
+
+    expect(await screen.findByRole('heading', { name: '我的模型 Key' })).toBeInTheDocument()
+  })
+
+  it('填好的 Key 显示成掩码，不会原样露在页面上', async () => {
+    localStorage.setItem(
+      LLM_KEY_STORAGE_KEY,
+      JSON.stringify({ apiKey: 'sk-user-key-1234567890', baseUrl: '', model: '' }),
+    )
+    render(<RecipeRecommendPage />)
+
+    expect(await screen.findByText('sk-u••••7890')).toBeInTheDocument()
+    expect(screen.queryByText('sk-user-key-1234567890')).toBeNull()
   })
 })
