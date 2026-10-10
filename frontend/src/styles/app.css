@@ -148,6 +148,45 @@ body {
   color: var(--color-danger);
 }
 
+/* 拍照是手机上的主路径，显式给两个入口：现拍、或者翻相册里已有的 */
+.shutter {
+  display: flex;
+  gap: 10px;
+}
+
+.shutter-btn {
+  min-height: 40px;
+  padding: 8px 20px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.shutter-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.shutter-btn--ghost {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.shutter-btn--ghost:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+}
+
+.shutter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* 静态演示站的示例图：点一张就能跑完「识别 → 菜谱」整条链路，访客不用自己找照片 */
 .samples {
   margin-top: 10px;
@@ -694,6 +733,10 @@ body {
 
   .sample {
     min-height: 44px;
+  }
+
+  .shutter-btn {
+    min-height: 48px;
   }
 
   .fab {

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ComponentProps } from 'react'
 
@@ -44,10 +45,14 @@ function setup(initial: Partial<ZoneProps> = {}) {
     ...initial,
   }
   const view = render(<UploadDropzone {...props} />)
+  const inputs = Array.from(
+    view.container.querySelectorAll('input[type="file"]'),
+  ) as HTMLInputElement[]
   return {
     onSelectFile,
     onReject,
-    input: view.container.querySelector('input[type="file"]') as HTMLInputElement,
+    inputs,
+    input: inputs[0],
     update: (next: Partial<ZoneProps>) => view.rerender(<UploadDropzone {...props} {...next} />),
   }
 }
@@ -68,6 +73,32 @@ describe('validateFile', () => {
 })
 
 describe('UploadDropzone', () => {
+  it('拍照与相册是两个入口，capture 只挂在相机那个 input 上', () => {
+    const { inputs } = setup()
+
+    expect(inputs).toHaveLength(2)
+    // 相册入口不能带 capture，否则手机上只剩拍照、翻不到已有照片
+    expect(inputs[0].getAttribute('capture')).toBeNull()
+    expect(inputs[1].getAttribute('capture')).toBe('environment')
+  })
+
+  it('点「拍照」开相机，点「从相册选」开相册，互不串台', async () => {
+    const user = userEvent.setup()
+    const { inputs } = setup()
+    const [gallery, camera] = inputs
+    const galleryClick = vi.spyOn(gallery, 'click')
+    const cameraClick = vi.spyOn(camera, 'click')
+
+    await user.click(screen.getByRole('button', { name: '拍照' }))
+    expect(cameraClick).toHaveBeenCalledTimes(1)
+    // 外层整块也能开相册，点里面的按钮不能让它再开一次
+    expect(galleryClick).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: '从相册选' }))
+    expect(galleryClick).toHaveBeenCalledTimes(1)
+    expect(cameraClick).toHaveBeenCalledTimes(1)
+  })
+
   it('选中的大图先压缩再交给上层，提示写在状态行里', async () => {
     const compressed = photo(400 * 1024)
     vi.mocked(prepareUploadFile).mockResolvedValue({

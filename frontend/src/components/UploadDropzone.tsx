@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import type { ChangeEvent, DragEvent, KeyboardEvent } from 'react'
+import type { ChangeEvent, DragEvent } from 'react'
 
 import { ALLOWED_MIME_TYPES, MAX_UPLOAD_BYTES, UPLOAD_HARD_LIMIT_BYTES } from '../constants'
 import { needsCompression, prepareUploadFile } from '../image-compress'
@@ -39,7 +39,10 @@ export function UploadDropzone({
 }: Props) {
   const [dragging, setDragging] = useState(false)
   const [compressNote, setCompressNote] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const galleryRef = useRef<HTMLInputElement>(null)
+  // 相机与相册拆成两个 input：capture 一旦挂上，手机上就只剩拍照、翻不到已有的照片。
+  // 两个入口各占一个，用户想现拍还是想选都行
+  const cameraRef = useRef<HTMLInputElement>(null)
   // 压缩是异步的：用户连选两张时，只认最后一次的结果，避免迟到的提示串台
   const selectionRef = useRef(0)
 
@@ -83,13 +86,6 @@ export function UploadDropzone({
     accept(event.dataTransfer.files?.[0])
   }
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      inputRef.current?.click()
-    }
-  }
-
   const className = ['dropzone', dragging ? 'is-dragover' : '', busy ? 'is-busy' : '']
     .filter(Boolean)
     .join(' ')
@@ -97,12 +93,15 @@ export function UploadDropzone({
   return (
     <div
       className={className}
-      role="button"
-      tabIndex={0}
-      aria-label="上传成品菜照片"
       aria-busy={busy}
-      onClick={() => inputRef.current?.click()}
-      onKeyDown={handleKeyDown}
+      onClick={(event) => {
+        // 两个 input 是程序化点开的，它们的 click 会冒泡回这一层；
+        // 不加这个判断就会「点拍照 → 又开一次相册」来回触发
+        if (busy || event.target === galleryRef.current || event.target === cameraRef.current) {
+          return
+        }
+        galleryRef.current?.click()
+      }}
       onDragOver={(event) => {
         event.preventDefault()
         setDragging(true)
@@ -111,28 +110,65 @@ export function UploadDropzone({
       onDrop={handleDrop}
     >
       <input
-        ref={inputRef}
+        ref={galleryRef}
         type="file"
         accept={ALLOWED_MIME_TYPES.join(',')}
+        hidden
+        onChange={handleChange}
+      />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept={ALLOWED_MIME_TYPES.join(',')}
+        capture="environment"
         hidden
         onChange={handleChange}
       />
       {previewUrl ? (
         <img className="preview" src={previewUrl} alt="已选择的成品菜照片" />
       ) : (
-        <p className={errorMessage ? 'dropzone-text is-error' : 'dropzone-text'}>
-          {errorMessage ? (
-            errorMessage
-          ) : (
-            <>
-              <strong>点击选择</strong> 或拖拽成品菜照片
-              <br />
-              <span className="muted-inline">
-                jpg / png / webp · 超过 {MAX_UPLOAD_BYTES / (1024 * 1024)} MB 自动压缩
-              </span>
-            </>
+        <>
+          <p className={errorMessage ? 'dropzone-text is-error' : 'dropzone-text'}>
+            {errorMessage ? (
+              errorMessage
+            ) : (
+              <>
+                <strong>拍一张</strong> 或拖拽成品菜照片
+                <br />
+                <span className="muted-inline">
+                  jpg / png / webp · 超过 {MAX_UPLOAD_BYTES / (1024 * 1024)} MB 自动压缩
+                </span>
+              </>
+            )}
+          </p>
+          {errorMessage ? null : (
+            <div className="shutter">
+              <button
+                type="button"
+                className="shutter-btn"
+                disabled={busy}
+                onClick={(event) => {
+                  // 两个按钮都在拖拽区里：点它们不能让外面那层再开一次相册
+                  event.stopPropagation()
+                  cameraRef.current?.click()
+                }}
+              >
+                拍照
+              </button>
+              <button
+                type="button"
+                className="shutter-btn shutter-btn--ghost"
+                disabled={busy}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  galleryRef.current?.click()
+                }}
+              >
+                从相册选
+              </button>
+            </div>
           )}
-        </p>
+        </>
       )}
       {previewUrl && errorMessage ? <p className="dropzone-text is-error">{errorMessage}</p> : null}
       {previewUrl && (statusText || compressNote) ? (
