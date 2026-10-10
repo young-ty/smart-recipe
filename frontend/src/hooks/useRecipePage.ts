@@ -368,6 +368,8 @@ export function useRecipePage(options: RecipePageOptions = {}): RecipePageContro
             source: body.source,
             recipe: body.recipe,
             at: Date.now(),
+            // 新记的条目默认未收藏；原本收藏过的由 rememberEntry 保留标记
+            favorite: false,
           })
         }
       })

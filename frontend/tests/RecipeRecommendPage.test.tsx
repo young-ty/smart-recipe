@@ -4,14 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../src/api/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../src/api/client')>()
-  return { ...actual, recognizeImage: vi.fn(), resolveRecipe: vi.fn(), fetchHealth: vi.fn() }
+  return {
+    ...actual,
+    recognizeImage: vi.fn(),
+    resolveRecipe: vi.fn(),
+    fetchHealth: vi.fn(),
+    fetchDishes: vi.fn(),
+  }
 })
 
-import { ApiError, fetchHealth, recognizeImage, resolveRecipe } from '../src/api/client'
+import { ApiError, fetchDishes, fetchHealth, recognizeImage, resolveRecipe } from '../src/api/client'
 import { EMPTY_HINT_MEMORY } from '../src/constants'
 import { RecipeRecommendPage } from '../src/pages/RecipeRecommendPage'
 import {
   AMBIGUOUS_RECOGNIZED,
+  DISHES,
   HEALTH,
   LIBRARY,
   RECOGNIZED,
@@ -43,7 +50,9 @@ beforeEach(() => {
   vi.mocked(recognizeImage).mockReset()
   vi.mocked(resolveRecipe).mockReset()
   vi.mocked(fetchHealth).mockReset()
+  vi.mocked(fetchDishes).mockReset()
   vi.mocked(fetchHealth).mockResolvedValue(HEALTH)
+  vi.mocked(fetchDishes).mockResolvedValue(DISHES)
   vi.mocked(resolveRecipe).mockResolvedValue(LIBRARY)
 })
 
@@ -439,5 +448,78 @@ describe('RecipeRecommendPage 菜谱记忆（FR-15）', () => {
 
     expect(screen.queryByRole('button', { name: '复用 红烧肉' })).not.toBeInTheDocument()
     expect(screen.getByText(EMPTY_HINT_MEMORY)).toBeInTheDocument()
+  })
+
+  it('删掉一条后列表里不再出现，存储里也清了', async () => {
+    localStorage.setItem(
+      MEMORY_STORAGE_KEY,
+      JSON.stringify([memoryEntry({ dish: '番茄蛋花汤', name: '番茄蛋花汤' })]),
+    )
+    const user = userEvent.setup()
+    render(<RecipeRecommendPage />)
+
+    await user.click(screen.getByRole('button', { name: '删除 番茄蛋花汤' }))
+
+    expect(screen.queryByRole('button', { name: '复用 番茄蛋花汤' })).not.toBeInTheDocument()
+    expect(screen.getByText(EMPTY_HINT_MEMORY)).toBeInTheDocument()
+    expect(localStorage.getItem(MEMORY_STORAGE_KEY)).not.toContain('番茄蛋花汤')
+  })
+
+  it('收藏后排到最前，标记写进本机存储', async () => {
+    localStorage.setItem(
+      MEMORY_STORAGE_KEY,
+      JSON.stringify([
+        memoryEntry({ dish: '番茄蛋花汤', name: '番茄蛋花汤', at: Date.now() }),
+        memoryEntry({ dish: '红烧肉', at: Date.now() - 3600_000 }),
+      ]),
+    )
+    const user = userEvent.setup()
+    render(<RecipeRecommendPage />)
+
+    await user.click(screen.getByRole('button', { name: '收藏 红烧肉' }))
+
+    const items = screen.getAllByRole('button', { name: /^复用 / })
+    expect(items[0]).toHaveAccessibleName('复用 红烧肉')
+    expect(localStorage.getItem(MEMORY_STORAGE_KEY)).toContain('"favorite":true')
+  })
+})
+
+describe('RecipeRecommendPage 等待提示（库内 / 生成分流）', () => {
+  it('库内候选等待时说清在读库', async () => {
+    vi.mocked(recognizeImage).mockResolvedValue(RECOGNIZED)
+    vi.mocked(resolveRecipe).mockReturnValue(new Promise(() => {}))
+    const user = userEvent.setup()
+    const { container } = render(<RecipeRecommendPage />)
+
+    uploadPicture(container, picture())
+    await user.click(screen.getByRole('button', { name: '开始识别' }))
+
+    expect(await recipePanel().findByText('库里已有这道菜，正在读取菜谱…')).toBeInTheDocument()
+  })
+
+  it('切到库外候选时说清在等大模型现写', async () => {
+    vi.mocked(recognizeImage).mockResolvedValue(RECOGNIZED)
+    vi.mocked(resolveRecipe).mockReturnValue(new Promise(() => {}))
+    const user = userEvent.setup()
+    const { container } = render(<RecipeRecommendPage />)
+
+    uploadPicture(container, picture())
+    await user.click(screen.getByRole('button', { name: '开始识别' }))
+    await user.click(await screen.findByRole('radio', { name: '梅菜扣肉 0.7%' }))
+
+    expect(await recipePanel().findByText(/正在让大模型现写/)).toBeInTheDocument()
+  })
+
+  it('覆盖清单没取到时退回通用提示，不猜分支', async () => {
+    vi.mocked(fetchDishes).mockRejectedValue(new Error('清单取不到'))
+    vi.mocked(recognizeImage).mockResolvedValue(RECOGNIZED)
+    vi.mocked(resolveRecipe).mockReturnValue(new Promise(() => {}))
+    const user = userEvent.setup()
+    const { container } = render(<RecipeRecommendPage />)
+
+    uploadPicture(container, picture())
+    await user.click(screen.getByRole('button', { name: '开始识别' }))
+
+    expect(await recipePanel().findByText('正在查询菜谱…')).toBeInTheDocument()
   })
 })

@@ -22,8 +22,6 @@ export const EMPTY_HINT_NO_CANDIDATE = '识别后这里显示候选菜品与置�
 
 export const EMPTY_HINT_MEMORY = '取过菜谱后这里会记住做过的菜：下次识别到同一道菜直接复用，不再请求大模型'
 
-export const RESOLVING_HINT = '正在查询菜谱…'
-
 /** 类别清单未交付前，名称一律带「待确认」标记（设计方案 7.2） */
 export const PROVISIONAL_TAG = '名称待确认'
 

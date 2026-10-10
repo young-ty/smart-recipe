@@ -5,8 +5,12 @@ import {
   MEMORY_STORAGE_KEY,
   findRemembered,
   formatRelativeTime,
+  memoryLimitNotice,
+  orderMemory,
   readMemory,
   rememberEntry,
+  removeEntry,
+  toggleFavorite,
   writeMemory,
 } from '../src/memory'
 import type { MemoryEntry } from '../src/memory'
@@ -119,6 +123,84 @@ describe('rememberEntry', () => {
     expect(list).toHaveLength(MEMORY_LIMIT)
     expect(list[0].dish).toBe(`别菜${MEMORY_LIMIT + 2}`)
     expect(list.some((entry) => entry.dish === '别菜0')).toBe(false)
+  })
+})
+
+describe('收藏与条目管理', () => {
+  it('收藏标记能写进存储再读出来，旧数据没有这个字段时按未收藏算', () => {
+    const storage = fakeStorage()
+    writeMemory([{ ...memoryEntry(), favorite: true }], storage)
+    expect(readMemory(storage)[0].favorite).toBe(true)
+
+    const legacy = memoryEntry()
+    const withoutFavorite = { ...legacy, favorite: undefined }
+    const read = readMemory(
+      fakeStorage({ [MEMORY_STORAGE_KEY]: JSON.stringify([withoutFavorite]) }),
+    )
+    expect(read[0].favorite).toBe(false)
+  })
+
+  it('收藏后移到最前，取消收藏后回到按时间排的位置', () => {
+    const list = [
+      memoryEntry({ dish: '红烧肉', at: 3 }),
+      memoryEntry({ dish: '麻婆豆腐', at: 2 }),
+      memoryEntry({ dish: '番茄蛋花汤', at: 1 }),
+    ]
+
+    const favorited = toggleFavorite(list, '番茄蛋花汤')
+    expect(favorited.map((entry) => entry.dish)).toEqual(['番茄蛋花汤', '红烧肉', '麻婆豆腐'])
+
+    const back = toggleFavorite(favorited, '番茄蛋花汤')
+    expect(back.map((entry) => entry.dish)).toEqual(['红烧肉', '麻婆豆腐', '番茄蛋花汤'])
+  })
+
+  it('记满时先丢没收藏的旧条目，收藏的留着并排在最前', () => {
+    let list: MemoryEntry[] = [memoryEntry({ dish: '老菜', at: 0, favorite: true })]
+    for (let i = 0; i <= MEMORY_LIMIT; i += 1) {
+      list = rememberEntry(list, memoryEntry({ dish: `新菜${i}`, at: i + 1 }))
+    }
+
+    expect(list).toHaveLength(MEMORY_LIMIT)
+    expect(list[0].dish).toBe('老菜')
+    expect(list.some((entry) => entry.dish === '新菜0')).toBe(false)
+  })
+
+  it('重新取到收藏过的菜时，收藏标记不丢', () => {
+    const favorited = toggleFavorite([memoryEntry({ dish: '红烧肉', at: 1 })], '红烧肉')
+    const again = rememberEntry(
+      favorited,
+      memoryEntry({ dish: '红烧肉', at: 9, source: 'generated' }),
+    )
+
+    expect(again).toHaveLength(1)
+    expect(again[0].favorite).toBe(true)
+    expect(again[0].at).toBe(9)
+  })
+
+  it('按菜名删掉一条，其余不动', () => {
+    const list = [memoryEntry({ dish: '红烧肉' }), memoryEntry({ dish: '麻婆豆腐' })]
+
+    expect(removeEntry(list, '红烧肉').map((entry) => entry.dish)).toEqual(['麻婆豆腐'])
+    expect(removeEntry(list, '没取过的菜')).toHaveLength(2)
+  })
+
+  it('没记满时不提示上限，记满后说清新菜会挤掉谁', () => {
+    expect(memoryLimitNotice([memoryEntry({ dish: '红烧肉' })])).toBeNull()
+
+    const full = Array.from({ length: MEMORY_LIMIT }, (_, i) =>
+      memoryEntry({ dish: `菜${i}`, at: i }),
+    )
+    expect(memoryLimitNotice(full)).toContain('会挤掉最旧的一条')
+
+    const allFavorited = full.map((entry) => ({ ...entry, favorite: true }))
+    expect(memoryLimitNotice(allFavorited)).toContain('取消一个收藏')
+  })
+
+  it('orderMemory 只重排顺序，不改动传进来的列表', () => {
+    const list = [memoryEntry({ dish: '红烧肉' }), memoryEntry({ dish: '麻婆豆腐', favorite: true })]
+
+    expect(orderMemory(list).map((entry) => entry.dish)).toEqual(['麻婆豆腐', '红烧肉'])
+    expect(list.map((entry) => entry.dish)).toEqual(['红烧肉', '麻婆豆腐'])
   })
 })
 

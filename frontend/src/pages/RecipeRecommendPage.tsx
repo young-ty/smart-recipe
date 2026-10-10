@@ -7,6 +7,8 @@ import { RecipePanel } from '../components/RecipePanel'
 import { DEMO_MODE, DEMO_SAMPLES, demoNotice, demoSampleById, fetchDemoImageFile } from '../demo'
 import { useRecipeMemory } from '../hooks/useRecipeMemory'
 import { useRecipePage } from '../hooks/useRecipePage'
+import { useDishCoverage } from '../hooks/useDishCoverage'
+import { pendingKind } from '../pending-hint'
 
 // 健康检查返回前的占位；返回后即替换为真实模型版本与类别数
 const FALLBACK_CAPTION = '模型: 检测中…'
@@ -15,6 +17,8 @@ export function RecipeRecommendPage() {
   // 菜谱记忆（FR-15）：做过的菜记在本机；识别到做过的菜直接复用这里的菜谱，
   // 不再请求后端（库外菜也就不再消耗大模型额度）
   const memory = useRecipeMemory()
+  // 覆盖清单只用来决定等待文案说哪一句；取不到就退回通用提示
+  const covered = useDishCoverage()
   const {
     state,
     selectImage,
@@ -47,6 +51,7 @@ export function RecipeRecommendPage() {
   const statusText = image ? `已选择本地图片 · ${image.file.name}` : null
   const provisionalName =
     state.candidates.find((item) => item.index === state.selectedIndex)?.provisional_name ?? false
+  const resolveBranch = pendingKind(state.selectedIndex, covered)
 
   const demoFile = DEMO_MODE ? (image?.file ?? null) : null
   const activeSampleId = demoFile
@@ -107,10 +112,16 @@ export function RecipeRecommendPage() {
           />
         </div>
         <div className="col col--recipe">
-          <RecipePanel resolve={state.resolve} provisionalName={provisionalName} />
+          <RecipePanel
+            resolve={state.resolve}
+            provisionalName={provisionalName}
+            pendingKind={resolveBranch}
+          />
           <RecipeMemoryCard
             entries={memory.entries}
             onShow={showMemory}
+            onRemove={memory.remove}
+            onToggleFavorite={memory.toggleFavorite}
             onClear={memory.clear}
           />
         </div>

@@ -634,23 +634,76 @@ body {
 
 .memory-item {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 7px 10px;
+  align-items: center;
+  gap: 2px;
+  padding-right: 6px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-chip);
   background: var(--color-surface);
-  color: var(--color-text);
-  font-family: inherit;
   font-size: 13.5px;
-  text-align: left;
-  cursor: pointer;
+}
+
+/* 收藏的条目在左边留一道标记：扫一眼就知道哪几条不会被挤掉 */
+.memory-item--fav {
+  border-left: 3px solid var(--color-warn-text);
 }
 
 .memory-item:hover {
   border-color: var(--color-text-muted);
   background: var(--color-bg);
+}
+
+.memory-open {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 4px 7px 10px;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.memory-icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-faint);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.memory-icon:hover {
+  background: var(--color-muted-bg);
+  color: var(--color-text);
+}
+
+.memory-icon[aria-pressed='true'] {
+  color: var(--color-warn-text);
+}
+
+.memory-icon--danger:hover {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+/* 记满 12 条才出现：先说清新菜会挤掉谁、收藏的不会被动 */
+.memory-limit {
+  margin: 8px 0 0;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-meta);
 }
 
 .memory-name small {
@@ -743,8 +796,14 @@ body {
   }
 
   .cand,
-  .memory-item {
+  .memory-open {
     min-height: 48px;
+  }
+
+  .memory-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
   }
 
   .sample {

@@ -56,4 +56,27 @@ describe('useRecipeMemory', () => {
     expect(readMemory()).toEqual([])
   })
 
+  it('删掉一条后存储里也不再留着', () => {
+    const { result } = renderHook(() => useRecipeMemory())
+    act(() => result.current.remember(memoryEntry({ dish: '红烧肉' })))
+    act(() => result.current.remember(memoryEntry({ dish: '番茄蛋花汤' })))
+
+    act(() => result.current.remove('红烧肉'))
+
+    expect(result.current.entries.map((entry) => entry.dish)).toEqual(['番茄蛋花汤'])
+    expect(readMemory().map((entry) => entry.dish)).toEqual(['番茄蛋花汤'])
+  })
+
+  it('收藏后排到最前并写回存储，识别命中照样查得到', () => {
+    const { result } = renderHook(() => useRecipeMemory())
+    act(() => result.current.remember(memoryEntry({ dish: '红烧肉' })))
+    act(() => result.current.remember(memoryEntry({ dish: '番茄蛋花汤' })))
+
+    act(() => result.current.toggleFavorite('红烧肉'))
+
+    expect(result.current.entries[0].dish).toBe('红烧肉')
+    expect(result.current.find('红烧肉')?.favorite).toBe(true)
+    expect(readMemory()[0].favorite).toBe(true)
+  })
+
 })

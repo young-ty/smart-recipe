@@ -3,6 +3,7 @@
 import type { MemoryEntry } from '../src/memory'
 import type {
   DishCandidate,
+  DishListResponse,
   HealthResponse,
   RecipeOut,
   RecognizeResponse,
@@ -106,6 +107,18 @@ export const HEALTH: HealthResponse = {
 
 export const picture = () => new File(['fake'], 'shot.png', { type: 'image/png' })
 
+/**
+ * GET /api/dishes 的样例：只列可承接的类别，所以 #77 在表内、#83 不在。
+ * 页面靠它判断等待期该说「读库」还是「等大模型生成」。
+ */
+export const DISHES: DishListResponse = {
+  class_count: 208,
+  labels_available: true,
+  library_recipe_count: 98,
+  covered_class_count: 73,
+  items: [{ index: 77, name: '红烧肉', provisional_name: false, library_recipe_id: 109 }],
+}
+
 /** 记忆条目样例：默认就是库内的「红烧肉」 */
 export function memoryEntry(overrides: Partial<MemoryEntry> = {}): MemoryEntry {
   const entry: MemoryEntry = {
@@ -114,6 +127,7 @@ export function memoryEntry(overrides: Partial<MemoryEntry> = {}): MemoryEntry {
     source: 'library',
     recipe: LIBRARY_RECIPE,
     at: Date.parse('2026-09-22T12:00:00+08:00'),
+    favorite: false,
     ...overrides,
   }
   // 生产代码里记忆条目的 name 就是菜谱标题，只改 name 的样例也保持一致

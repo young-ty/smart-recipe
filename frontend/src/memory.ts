@@ -15,6 +15,8 @@ export type MemoryEntry = {
   recipe: RecipeOut
   /** 记录时间（epoch ms） */
   at: number
+  /** 收藏：条数记满时收藏的不会被挤掉，列表里也排在前面 */
+  favorite: boolean
 }
 
 export const MEMORY_LIMIT = 12
@@ -64,7 +66,8 @@ function isMemoryEntry(value: unknown): value is MemoryEntry {
     typeof entry.at === 'number' &&
     typeof entry.recipe === 'object' &&
     entry.recipe !== null &&
-    (entry.source === 'library' || entry.source === 'generated')
+    (entry.source === 'library' || entry.source === 'generated') &&
+    (entry.favorite === undefined || typeof entry.favorite === 'boolean')
   )
 }
 
@@ -81,6 +84,7 @@ export function readMemory(target: Storage | null = defaultStorage()): MemoryEnt
     source: entry.source,
     recipe: entry.recipe,
     at: entry.at,
+    favorite: entry.favorite === true,
   }))
 }
 
@@ -100,10 +104,63 @@ export function findRemembered(entries: MemoryEntry[], dish: string): MemoryEntr
   return entries.find((entry) => entry.dish === dish) ?? null
 }
 
-/** 记一笔：同名的菜去重后放到最前，超出上限的旧记录丢掉 */
+/**
+ * 记一笔：同名的菜去重后放到最前，超出上限的旧记录丢掉。
+ *
+ * 已经收藏的菜再被取一次时保留收藏标记：重新识别不该把收藏降级成普通条目。
+ */
 export function rememberEntry(entries: MemoryEntry[], entry: MemoryEntry): MemoryEntry[] {
+  const existing = entries.find((item) => item.dish === entry.dish)
+  const merged: MemoryEntry = {
+    ...entry,
+    favorite: entry.favorite || existing?.favorite === true,
+  }
   const rest = entries.filter((item) => item.dish !== entry.dish)
-  return [entry, ...rest].slice(0, MEMORY_LIMIT)
+  return orderMemory([merged, ...rest]).slice(0, MEMORY_LIMIT)
+}
+
+/**
+ * 收藏的排前面，两段内部各自按最近在前。
+ *
+ * 按 `at` 重排而不是沿用数组顺序：取消收藏时那一条要回到它按时间本该在的位置，
+ * 时间戳相同的条目保持原有先后（sort 在 ES2019 起是稳定排序）。截断时先丢没收藏的旧条目。
+ */
+export function orderMemory(entries: MemoryEntry[]): MemoryEntry[] {
+  return [...entries].sort((left, right) => {
+    if (left.favorite !== right.favorite) {
+      return left.favorite ? -1 : 1
+    }
+    return right.at - left.at
+  })
+}
+
+/** 删掉一条：清空是整表操作，只想去掉某道做错的菜时用它 */
+export function removeEntry(entries: MemoryEntry[], dish: string): MemoryEntry[] {
+  return entries.filter((entry) => entry.dish !== dish)
+}
+
+/** 收藏 / 取消收藏：改完立即重排，收藏的条目当次就跳到最前 */
+export function toggleFavorite(entries: MemoryEntry[], dish: string): MemoryEntry[] {
+  const next = entries.map((entry) =>
+    entry.dish === dish ? { ...entry, favorite: !entry.favorite } : entry,
+  )
+  return orderMemory(next)
+}
+
+/**
+ * 记满时的提示：不提示的话，用户只看到「刚取过的菜不见了」。
+ * 收藏的菜不参与淘汰，所以全被收藏满了要先取消一个才腾得出位置。
+ */
+export function memoryLimitNotice(entries: MemoryEntry[]): string | null {
+  if (entries.length < MEMORY_LIMIT) {
+    return null
+  }
+  if (entries.every((entry) => entry.favorite)) {
+    return (
+      '已记满 ' + MEMORY_LIMIT + ' 道，而且都收藏了：新识别的菜记不进来，取消一个收藏就能腾出位置'
+    )
+  }
+  return '已记满 ' + MEMORY_LIMIT + ' 道：新识别的菜会挤掉最旧的一条，收藏的不会被挤掉'
 }
 
 /** 相对时间：刚取过的菜一眼能看出是「刚刚」还是「前天」 */

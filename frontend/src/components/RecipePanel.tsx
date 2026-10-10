@@ -1,19 +1,23 @@
 import { useRef } from 'react'
 
-import { EMPTY_HINT_IDLE, RESOLVING_HINT, SOURCE_LABEL } from '../constants'
+import { EMPTY_HINT_IDLE, SOURCE_LABEL } from '../constants'
 import { formatRelativeTime } from '../memory'
 import type { ResolveState } from '../hooks/useRecipePage'
+import type { PendingKind } from '../pending-hint'
 import { PanelHeader } from './PanelHeader'
 import { RecipeView } from './RecipeView'
+import { ResolvingHint } from './ResolvingHint'
 import { ScrollToBottomButton } from './ScrollToBottomButton'
 
 type Props = {
   resolve: ResolveState
   provisionalName: boolean
+  /** 等待期走哪条分支（库内 / 生成 / 不确定），只影响提示文案 */
+  pendingKind: PendingKind
 }
 
 /** 区域 C：菜谱与做法。四种状态各自有明确文案，不把「查不到」伪装成空白。 */
-export function RecipePanel({ resolve, provisionalName }: Props) {
+export function RecipePanel({ resolve, provisionalName, pendingKind }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const badge = resolve.source ? SOURCE_LABEL[resolve.source] : ''
 
@@ -25,7 +29,7 @@ export function RecipePanel({ resolve, provisionalName }: Props) {
       <RecipeView recipe={resolve.recipe} provisionalName={provisionalName} source={resolve.source} />
     )
   } else if (resolve.loading) {
-    body = <p className="empty">{RESOLVING_HINT}</p>
+    body = <ResolvingHint kind={pendingKind} />
   } else if (resolve.reason) {
     body = <p className="empty">{resolve.reason}</p>
   } else {
