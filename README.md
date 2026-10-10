@@ -456,7 +456,7 @@ torch / timm 只在这一步用到，见 `backend/requirements-tools.txt`，**�
 - API Key 轮换：Key 只写在 `.env`（已 gitignore），不要贴进文档、截图或提交信息；一旦外泄就在控制台重置。
 - 隐私约束：不落盘保存用户上传的原图，`recognition_logs` 只记录图片摘要与识别结果；
   调用大模型时只发送菜名，不发送照片。
-- 提交规范：每次改动都需附带测试并形成一次 commit（见 `AGENTS.md`）。
+- 提交规范：项目本身的改动都需附带测试并形成一次 commit，仓库之外的本地事务不进版本库（见 `AGENTS.md`）。
 
 ## 许可
 
