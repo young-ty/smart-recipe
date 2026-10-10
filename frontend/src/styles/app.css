@@ -305,6 +305,22 @@ body {
 
 /* ---------- 区域 B：候选菜品 ---------- */
 
+/* 把握不足的提醒：放在列表上方，不跟着候选一起滚走 */
+.cand-note {
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-chip);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+.cand-note--close {
+  background: var(--color-muted-bg);
+  color: var(--color-text-muted);
+}
+
 .candidates {
   display: flex;
   flex: 1 1 auto;

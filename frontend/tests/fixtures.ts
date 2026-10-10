@@ -37,6 +37,18 @@ export const PROVISIONAL_RECOGNIZED: RecognizeResponse = {
   candidates: PROVISIONAL_CANDIDATES,
 }
 
+/** 误判样例：拌面照被判成担担面，顶名只有 45.9%，前三名咬得很紧（README 里那个案例） */
+export const AMBIGUOUS_CANDIDATES: DishCandidate[] = [
+  { index: 156, name: '担担面', confidence: 0.459, provisional_name: false },
+  { index: 158, name: '炒面', confidence: 0.402, provisional_name: false },
+  { index: 155, name: '凉皮', confidence: 0.061, provisional_name: false },
+]
+
+export const AMBIGUOUS_RECOGNIZED: RecognizeResponse = {
+  ...RECOGNIZED,
+  candidates: AMBIGUOUS_CANDIDATES,
+}
+
 export const LIBRARY_RECIPE: RecipeOut = {
   id: 109,
   origin: 'seed',

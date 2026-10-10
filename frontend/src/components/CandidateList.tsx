@@ -1,4 +1,5 @@
 import { EMPTY_HINT_NO_CANDIDATE } from '../constants'
+import { confidenceVerdict } from '../confidence'
 import type { DishCandidate } from '../types'
 import { CandidateButton } from './CandidateButton'
 import { ManualDishForm } from './ManualDishForm'
@@ -24,9 +25,16 @@ export function CandidateList({
   onSubmitManual,
 }: Props) {
   const hasCandidates = candidates.length > 0
+  // 把握不大时先说清楚，别让一个 45% 的猜测看起来像结论
+  const verdict = confidenceVerdict(candidates)
   return (
     <section className="card card--grow">
       <PanelHeader title="识别结果" trailing={<span className="hint">点击切换候选</span>} />
+      {verdict.note ? (
+        <p className={`cand-note cand-note--${verdict.level}`} role="status">
+          {verdict.note}
+        </p>
+      ) : null}
       <div
         className="candidates"
         role={hasCandidates ? 'radiogroup' : undefined}

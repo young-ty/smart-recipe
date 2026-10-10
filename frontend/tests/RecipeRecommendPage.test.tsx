@@ -11,6 +11,7 @@ import { ApiError, fetchHealth, recognizeImage, resolveRecipe } from '../src/api
 import { EMPTY_HINT_MEMORY } from '../src/constants'
 import { RecipeRecommendPage } from '../src/pages/RecipeRecommendPage'
 import {
+  AMBIGUOUS_RECOGNIZED,
   HEALTH,
   LIBRARY,
   RECOGNIZED,
@@ -190,6 +191,31 @@ describe('RecipeRecommendPage 识别与菜谱链路', () => {
     expect(recipePanel().getByText('库内菜谱')).toBeInTheDocument()
     expect(screen.getByText('五花肉 · 500 克')).toBeInTheDocument()
     expect(screen.getByText('五花肉切块焯水')).toBeInTheDocument()
+  })
+
+  it('顶名置信度低时，在候选上方提醒先确认', async () => {
+    vi.mocked(recognizeImage).mockResolvedValue(AMBIGUOUS_RECOGNIZED)
+    const user = userEvent.setup()
+    const { container } = render(<RecipeRecommendPage />)
+
+    uploadPicture(container, picture())
+    await user.click(screen.getByRole('button', { name: '开始识别' }))
+
+    const note = await screen.findByRole('status')
+    expect(note).toHaveTextContent('识别把握不大')
+    expect(note).toHaveTextContent('45.9%')
+  })
+
+  it('置信度够高且拉开距离时，不出现把握提示', async () => {
+    vi.mocked(recognizeImage).mockResolvedValue(RECOGNIZED)
+    const user = userEvent.setup()
+    const { container } = render(<RecipeRecommendPage />)
+
+    uploadPicture(container, picture())
+    await user.click(screen.getByRole('button', { name: '开始识别' }))
+    await screen.findByRole('radio', { name: '红烧肉 88.5%' })
+
+    expect(screen.queryByRole('status')).toBeNull()
   })
 
   it('切到未覆盖的候选时展示后端给出的原因，而不是空白', async () => {
